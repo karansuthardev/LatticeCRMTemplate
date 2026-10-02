@@ -1,5 +1,7 @@
 'use client';
-import { motion } from "motion/react";
+import { useState } from "react";
+import { motion, easeOut } from "motion/react";
+import { cn } from "../utility/cn";
 
 export default function FaultyButton() {
   const [isHovered, setIsHovered] = useState(false);

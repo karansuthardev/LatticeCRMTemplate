@@ -140,7 +140,7 @@ export default function RootLayout({
       lang="en"
       className={`${generalSans.className} ${generalSans.variable} ${gambetta.variable}  h-full antialiased`}
     >
-      <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-indigo-100 selection:text-indigo-950">
+      <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange -950">
         <Navbar />
         <div className="min-h-screen w-full">{children}</div>
       </body>
