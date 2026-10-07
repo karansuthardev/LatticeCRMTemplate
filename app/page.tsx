@@ -111,6 +111,38 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+            <div className="grid h-120 w-full grid-cols-2 grid-rows-1 divide-x divide-zinc-200 overflow-hidden">
+              <div className="relative h-full w-full bg-zinc-100">
+                <Image
+                  alt="bg for card"
+                  src={"/background_image.webp"}
+                  fill
+                  className="absolute inset-0 h-full w-full shrink-0 object-cover"
+                />
+                <div className="absolute inset-0 m-auto flex h-110 w-140 items-center">
+                  <CustomerProfileCard />
+                </div>
+              </div>
+              <div className="flex h-full w-full flex-col items-start justify-end gap-4 p-8 pb-8">
+                <p className="text-4xl font-medium text-zinc-800">
+                  Decision clarity{" "}
+                  <span className="inline-block text-zinc-600">
+                    {" "}
+                    informed by{" "}
+                  </span>
+                  <br />{" "}
+                  <span className="inline-block text-zinc-600">
+                    intelligent{" "}
+                  </span>{" "}
+                  insights.
+                </p>
+                <p className="text-md font-normal tracking-wide text-pretty text-zinc-600">
+                  Ask anything about your business and get answers grounded in
+                  your CRM data and customer context.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
