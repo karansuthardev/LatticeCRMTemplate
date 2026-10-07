@@ -3,6 +3,7 @@ import Image from "next/image";
 import ContactsTableCard from "./components/contactsTableCard";
 import CustomerTableCard from "./components/customerTableCard";
 import CustomerProfileCard from "./components/customerProfileCard";
+import AgentChatCard from "./components/agentChatCard";
 
 export default function Home() {
   return (
@@ -121,7 +122,7 @@ export default function Home() {
                   className="absolute inset-0 h-full w-full shrink-0 object-cover"
                 />
                 <div className="absolute inset-0 m-auto flex h-110 w-140 items-center">
-                  <CustomerProfileCard />
+                  <AgentChatCard />
                 </div>
               </div>
               <div className="flex h-full w-full flex-col items-start justify-end gap-4 p-8 pb-8">
