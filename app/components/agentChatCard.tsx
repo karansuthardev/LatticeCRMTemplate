@@ -32,10 +32,39 @@ const contextFiles: ContextFile[] = [
   },
 ];
 
-type ChatPhase = "thinking" | "collecting" | "answering" | "done";
+const PROMPT_TEXT = "What are Acme’s biggest concerns about this deal?";
+
+const responseContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.18,
+    },
+  },
+};
+
+const responseLineVariants = {
+  hidden: { opacity: 0, filter: "blur(6px)", y: 8 },
+  visible: {
+    opacity: 1,
+    filter: "blur(0px)",
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: easeOut,
+    },
+  },
+};
+
+type ChatPhase = "typing" | "thinking" | "collecting" | "answering" | "done";
 
 export default function AgentChatCard() {
-  const [phase, setPhase] = useState<ChatPhase>("thinking");
+  const [phase, setPhase] = useState<ChatPhase>("typing");
+  const [hasUserSent, setHasUserSent] = useState(false);
+  const [sentPrompt, setSentPrompt] = useState(PROMPT_TEXT);
+  const [typedInput, setTypedInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const [isContextExpanded, setIsContextExpanded] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -52,45 +81,77 @@ export default function AgentChatCard() {
         behavior: "smooth",
       });
     }
-  }, [phase, isContextExpanded]);
+  }, [phase, isContextExpanded, hasUserSent]);
 
   // Sequenced animation loop
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function startCycle() {
-      setPhase("thinking");
+      setPhase("typing");
+      setHasUserSent(false);
+      setSentPrompt(PROMPT_TEXT);
+      setTypedInput("");
+      setIsSending(false);
       setIsContextExpanded(false);
       setSelectedAttachment(null);
       setShowAttachMenu(false);
 
-      // 1. Thinking -> Collecting context (shows filenames)
+      // 1. Typewriter animation character-by-character into input
+      for (let i = 1; i <= PROMPT_TEXT.length; i++) {
+        timers.push(
+          setTimeout(() => {
+            setTypedInput(PROMPT_TEXT.slice(0, i));
+          }, 350 + i * 26),
+        );
+      }
+
+      const typingDuration = 350 + PROMPT_TEXT.length * 26;
+
+      // 2. Press send button visual
+      timers.push(
+        setTimeout(() => {
+          setIsSending(true);
+        }, typingDuration + 300),
+      );
+
+      // 3. Shoot message into chat & start thinking
+      timers.push(
+        setTimeout(() => {
+          setIsSending(false);
+          setTypedInput("");
+          setHasUserSent(true);
+          setPhase("thinking");
+        }, typingDuration + 500),
+      );
+
+      // 4. Thinking -> Collecting context (shows filenames)
       timers.push(
         setTimeout(() => {
           setPhase("collecting");
-        }, 1300),
+        }, typingDuration + 500 + 1300),
       );
 
-      // 2. Collecting -> Answering (shrinks to pill with dropdown, answer streams in)
+      // 5. Collecting -> Answering (shrinks to pill with dropdown, answer streams in)
       timers.push(
         setTimeout(() => {
           setPhase("answering");
-        }, 3200),
+        }, typingDuration + 500 + 3200),
       );
-      //
-      //       // 3. Answering -> Done
-      //       timers.push(
-      //         setTimeout(() => {
-      //           setPhase("done");
-      //         }, 4200)
-      //       );
-      //
-      //       // 4. Hold for reading, then loop
-      //       timers.push(
-      //         setTimeout(() => {
-      //           startCycle();
-      //         }, 12500)
-      //       );
+
+      // 6. Answering -> Done
+      timers.push(
+        setTimeout(() => {
+          setPhase("done");
+        }, typingDuration + 500 + 4200),
+      );
+
+      // 7. Hold for reading, then loop
+      timers.push(
+        setTimeout(() => {
+          startCycle();
+        }, typingDuration + 500 + 13000),
+      );
     }
 
     startCycle();
@@ -98,6 +159,7 @@ export default function AgentChatCard() {
   }, []);
 
   const handleRedo = () => {
+    setHasUserSent(true);
     setPhase("thinking");
     setIsContextExpanded(false);
     setTimeout(() => setPhase("collecting"), 1100);
@@ -106,8 +168,13 @@ export default function AgentChatCard() {
   };
 
   const handleSend = () => {
-    if (!inputValue.trim()) return;
+    const textToSend = inputValue.trim() || typedInput.trim() || PROMPT_TEXT;
+    setSentPrompt(textToSend);
     setInputValue("");
+    setTypedInput("");
+    setHasUserSent(true);
+    setIsSending(true);
+    setTimeout(() => setIsSending(false), 200);
     handleRedo();
   };
 
@@ -120,7 +187,7 @@ export default function AgentChatCard() {
           <div className="h-3 w-3 rounded-full border border-yellow-600 bg-yellow-500" />
           <div className="h-3 w-3 rounded-full border border-green-600 bg-green-500" />
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-medium text-zinc-800">
+        <div className="flex items-center gap-1.5 text-xs font-normal text-zinc-800">
           <span>Agent Chat</span>
         </div>
       </header>
@@ -130,121 +197,124 @@ export default function AgentChatCard() {
         ref={scrollRef}
         className="flex flex-1 scrollbar-none flex-col gap-3.5 overflow-y-auto p-4"
       >
-        {/* User Prompt */}
-        <div className="flex justify-end">
-          <div className="flex max-w-[85%] flex-col items-end gap-1">
-            <div className="rounded-2xl rounded-br-xs bg-zinc-200 px-4 py-2 text-xs font-medium text-zinc-800">
-              What are Acme’s biggest concerns about this deal?
-            </div>
-            <span className="pr-1 text-[9px] text-zinc-400">
-              Today 10:14 AM
-            </span>
-          </div>
-        </div>
+        {/* User Prompt (animates into thread when sent) */}
+        <AnimatePresence>
+          {hasUserSent && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: easeOut }}
+              className="flex justify-end"
+            >
+              <div className="flex max-w-[85%] flex-col items-end gap-2">
+                <div className="rounded-2xl rounded-br-xs bg-zinc-200 px-4 py-2 text-sm font-normal text-zinc-800">
+                  {sentPrompt}
+                </div>
+                <span className="pr-1 text-xs text-zinc-400">
+                  Today 10:14 AM
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* AI Agent Response Thread */}
-        <div className="flex items-start gap-2.5">
+        {hasUserSent && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="flex items-start gap-2.5"
+          >
           <div className="flex flex-1 flex-col gap-2">
-            {/* Step 1: "Thinking..." */}
-            {phase === "thinking" && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex w-fit items-center gap-2 rounded-xl text-[10px] text-zinc-700"
-              >
-                <LoadingSpinner />
-                <span>Thinking…</span>
-              </motion.div>
-            )}
-
-            {/* Step 2: "Collecting context from [filenames]..." */}
-            {phase === "collecting" && (
-              <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col gap-1 rounded-xl  text-[10px]"
-              >
+            {/* Single Thinking & Collecting Widget (prevents loader remounting) */}
+            {(phase === "thinking" || phase === "collecting") && (
+              <div className="flex flex-col gap-1 rounded-xl text-xs">
                 <div className="flex items-center gap-2">
                   <LoadingSpinner />
                   <span className="font-medium text-zinc-700">
-                    Collecting context…
+                    {phase === "thinking" ? "Thinking…" : "Collecting context…"}
                   </span>
                 </div>
-                <p className="pl-5 font-mono text-[10px] leading-relaxed text-zinc-500">
-                  <span className="font-normal text-zinc-700">
-                    deal_activity.log
-                  </span>
-                  ,{" "}
-                  <span className="font-normal text-zinc-700">
-                    recent_call.txt
-                  </span>
-                  ,{" "}
-                  <span className="font-normal text-zinc-700">
-                    email_history.eml
-                  </span>
-                  ,{" "}
-                  <span className="font-normal text-zinc-700">
-                    meeting_notes.md
-                  </span>
-                </p>
-              </motion.div>
+
+                <AnimatePresence>
+                  {phase === "collecting" && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 2 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="pl-5 font-mono text-xs leading-relaxed text-zinc-500"
+                    >
+                      <span className="font-normal text-zinc-700">
+                        deal_activity.log
+                      </span>
+                      ,{" "}
+                      <span className="font-normal text-zinc-700">
+                        recent_call.txt
+                      </span>
+                      ,{" "}
+                      <span className="font-normal text-zinc-700">
+                        email_history.eml
+                      </span>
+                      ,{" "}
+                      <span className="font-normal text-zinc-700">
+                        meeting_notes.md
+                      </span>
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Step 3: Shrunk to single first file + dropdown chevron icon */}
             {(phase === "answering" || phase === "done") && (
               <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2">
-                  {/* Expanded Context List */}
-                  <button
-                    type="button"
-                    onClick={() => setIsContextExpanded((prev) => !prev)}
-                    className="flex w-fit items-center gap-2 rounded-lg  py-1 text-[10px] font-medium text-zinc-600 "
-                  >
-                    <FileTextIcon />
-                    <span className="font-mono text-[10px] text-zinc-800">
-                      {contextFiles[0].name}
-                    </span>
-                    <span className="text-[10px] font-normal text-zinc-400">
-                      +{contextFiles.length - 1} files
-                    </span>
-                    <motion.span
-                      animate={{ rotate: isContextExpanded ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="ml-0.5 text-zinc-500"
+                {/* Simple files container with no bg */}
+                <div className="flex flex-col gap-1 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 font-mono text-zinc-700">
+                      <FileTextIcon />
+                      <span>{contextFiles[0].name}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsContextExpanded((prev) => !prev)}
+                      className="flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-zinc-700"
+                      title={
+                        isContextExpanded ? "Collapse files" : "Show all files"
+                      }
                     >
-                      <ChevronDownIcon />
-                    </motion.span>
-                  </button>
+                      <motion.span
+                        animate={{ rotate: isContextExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="inline-block"
+                      >
+                        <ChevronDownIcon />
+                      </motion.span>
+                    </button>
+                  </div>
+
                   <AnimatePresence>
                     {isContextExpanded && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 p-2 shadow-2xs"
+                        transition={{ duration: 0.2 }}
+                        className="flex flex-col gap-1 overflow-hidden"
                       >
-                        <div className="flex flex-col divide-y divide-zinc-100 text-[10px]">
-                          {contextFiles.map((file) => (
-                            <div
-                              key={file.name}
-                              className="flex flex-col gap-0.5 py-1.5 first:pt-0.5 last:pb-0.5"
-                            >
-                              <div className="flex items-center gap-1.5 font-mono font-medium text-zinc-700">
-                                <FileTextIcon />
-                                <span>{file.name}</span>
-                                <span className="font-sans text-[9px] text-zinc-400">
-                                  · {file.source}
-                                </span>
-                              </div>
-                              <p className="pl-4 text-zinc-500">
-                                {file.detail}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
+                        {contextFiles.slice(1).map((file) => (
+                          <div
+                            key={file.name}
+                            className="flex items-center gap-1.5 font-mono text-zinc-600"
+                          >
+                            <FileTextIcon />
+                            <span>{file.name}</span>
+                          </div>
+                        ))}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -252,12 +322,15 @@ export default function AgentChatCard() {
 
                 {/* Final Answer Text */}
                 <motion.div
-                  initial={{ opacity: 0, filter: "blur(6px)", y: 4 }}
-                  animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="flex flex-col gap-2  text-xs text-zinc-800 mt-2"
+                  variants={responseContainerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="mt-2 flex flex-col gap-2 text-xs text-zinc-800"
                 >
-                  <p className="leading-relaxed font-medium text-zinc-800">
+                  <motion.p
+                    variants={responseLineVariants}
+                    className="leading-relaxed font-medium text-zinc-800"
+                  >
                     Acme’s main concerns are{" "}
                     <span className="font-medium text-zinc-800">
                       implementation time
@@ -271,33 +344,41 @@ export default function AgentChatCard() {
                       internal approval
                     </span>
                     .
-                  </p>
+                  </motion.p>
 
-                  <p className="text-[10px] leading-relaxed tracking-wide  text-zinc-800">
+                  <motion.p
+                    variants={responseLineVariants}
+                    className="leading-relaxed tracking-wide text-zinc-800"
+                  >
                     They’re interested in moving forward, but want confidence
                     that migrating their existing data won’t disrupt operations.
                     The operations team also needs to approve the implementation
                     before they can commit.
-                  </p>
+                  </motion.p>
 
                   {/* Highlight callout box */}
-                  <div className="mt-0.5 rounded-xl tracking-wide text-[10px] text-zinc-800">
+                  <motion.div
+                    variants={responseLineVariants}
+                    className="mt-0.5 rounded-xl tracking-wide text-zinc-800"
+                  >
                     <span className="font-medium text-zinc-800">
                       Recommended focus:
                     </span>{" "}
                     Address the migration process and implementation timeline in
                     the next conversation.
-                  </div>
+                  </motion.div>
 
                   {/* ── Action Buttons Below Response ────────────────────── */}
-                  <div className="mt-1 flex items-center justify-between pt-2 text-[10px] text-zinc-500">
-                    
-                    <div className="flex items-center gap-1.5">
+                  <motion.div
+                    variants={responseLineVariants}
+                    className="mt-1 flex items-center justify-between pt-2 text-xs text-zinc-500"
+                  >
+                    <div className="flex items-center gap-4">
                       {/* Redo Button */}
                       <button
                         type="button"
                         onClick={handleRedo}
-                        className="flex items-center gap-1 rounded-md  bg-zinc-200 px-2 py-1 text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
+                        className="-mx-2 flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-1 text-zinc-600 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
                         title="Redo analysis"
                       >
                         <RedoIcon />
@@ -308,18 +389,19 @@ export default function AgentChatCard() {
                       <button
                         type="button"
                         onClick={() => {}}
-                        className="flex h-5 w-5 items-center justify-center rounded-md bg-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
+                        className="flex h-5 w-5 items-center justify-center rounded-md bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
                         title="More options"
                       >
                         <MenuDotsIcon />
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
+      )}
       </div>
 
       {/* ── Bottom Message Input Panel ───────────────────────────── */}
@@ -338,24 +420,27 @@ export default function AgentChatCard() {
                 transition: { duration: 0.1, ease: easeOut },
               }}
               transition={{ duration: 0.15, ease: easeOut }}
-              className="absolute bottom-14 left-4 z-30 flex w-40 flex-col gap-0.5 rounded-xl border border-zinc-200 bg-zinc-50 p-1 shadow-xs"
+              className="absolute bottom-12 left-2 z-30 flex w-40 flex-col gap-0.5 rounded-xl border border-zinc-200 bg-zinc-50 p-1 shadow-xs"
             >
               {[
-                "CRM Deal Records",
-                "Email History",
-                "Call Transcripts",
-                "Meeting Notes",
-              ].map((res) => (
+                { label: "CRM Deal Records", icon: DatabaseIcon },
+                { label: "Email History", icon: MailsIcon },
+                { label: "Call Transcripts", icon: CallIcon },
+                { label: "Meeting Notes", icon: NotesIcon },
+              ].map(({ label, icon: Icon }) => (
                 <button
-                  key={res}
+                  key={label}
                   type="button"
                   onClick={() => {
-                    setSelectedAttachment(res);
+                    setSelectedAttachment(label);
                     setShowAttachMenu(false);
                   }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[10px] text-zinc-700 hover:bg-zinc-200"
+                  className="group flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-xs text-zinc-700 hover:bg-zinc-200"
                 >
-                  <span className="w-full text-start">{res}</span>
+                  <span className="shrink-0 text-zinc-600">
+                    <Icon />
+                  </span>
+                  <span className="w-full text-start">{label}</span>
                 </button>
               ))}
             </motion.div>
@@ -365,7 +450,13 @@ export default function AgentChatCard() {
         {/* Selected Attachment Tag if any */}
         {selectedAttachment && (
           <div className="mb-1 flex items-center gap-1.5 px-1">
-            <span className="inline-flex items-center gap-1 rounded-md bg-zinc-200 px-2 py-1 text-[10px] text-zinc-700">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-zinc-200 px-2 py-1 text-xs text-zinc-700">
+              <span className="shrink-0 text-zinc-600">
+                {selectedAttachment === "CRM Deal Records" && <DatabaseIcon />}
+                {selectedAttachment === "Email History" && <MailsIcon />}
+                {selectedAttachment === "Call Transcripts" && <CallIcon />}
+                {selectedAttachment === "Meeting Notes" && <NotesIcon />}
+              </span>
               <span>{selectedAttachment}</span>
               <button
                 type="button"
@@ -382,7 +473,7 @@ export default function AgentChatCard() {
                   stroke="currentColor"
                   strokeWidth="2"
                   strokeLinecap="round"
-                  stroke-Linejoin="round"
+                  strokeLinejoin="round"
                 >
                   <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"></path>
                 </svg>
@@ -391,7 +482,7 @@ export default function AgentChatCard() {
           </div>
         )}
 
-        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-2 py-2">
+        <div className="flex items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-1">
           <button
             type="button"
             onClick={() => setShowAttachMenu((prev) => !prev)}
@@ -407,24 +498,34 @@ export default function AgentChatCard() {
           {/* Input text */}
           <input
             type="text"
-            value={inputValue}
+            value={inputValue !== "" ? inputValue : typedInput}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            placeholder="Ask anything about this deal, team, or pipeline…"
+            placeholder={
+              typedInput
+                ? ""
+                : "Ask anything about this deal, team, or pipeline…"
+            }
             className="flex-1 bg-transparent text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none"
           />
 
           {/* Enter / Send Button */}
-          <button
+          <motion.button
             type="button"
             onClick={handleSend}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-100 transition-transform hover:bg-zinc-700 active:scale-95"
+            animate={
+              isSending
+                ? { scale: 0.88, backgroundColor: "var(--color-zinc-900)" }
+                : { scale: 1, backgroundColor: "var(--color-zinc-800)" }
+            }
+            transition={{ type: "spring", stiffness: 500, damping: 20 }}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-100 transition-colors hover:bg-zinc-700"
             title="Send query"
           >
             <ArrowUpIcon />
-          </button>
+          </motion.button>
         </div>
       </footer>
     </div>
@@ -478,17 +579,18 @@ function RedoIcon() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      width="10"
-      height="10"
+      width="12"
+      height="12"
+      color="currentColor"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M21 2v6h-6" />
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-      <path d="M3 12a9 9 0 0 0 15 6.7L21 16" />
+      <path d="M16.5 7.99976H18C19.4142 7.99976 20.1213 7.99976 20.5607 7.56042C21 7.12108 21 6.41397 21 4.99976V3.49976"></path>
+      <path d="M3 11.9998C3 7.02919 7.0293 2.99976 12 2.99976C15.571 2.99976 18.0948 4.73029 20 7.08347M21 11.9998C21 16.9703 16.9707 20.9998 12 20.9998C8.42904 20.9998 5.90524 19.2692 4 16.916"></path>
+      <path d="M7.5 15.9998H6C4.58579 15.9998 3.87868 15.9998 3.43934 16.4391C3 16.8784 3 17.5855 3 18.9998V20.4998"></path>
     </svg>
   );
 }
@@ -500,11 +602,14 @@ function MenuDotsIcon() {
       viewBox="0 0 24 24"
       width="12"
       height="12"
-      fill="currentColor"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <circle cx="12" cy="5" r="1.5" />
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="12" cy="19" r="1.5" />
+      <path d="M6.00449 12.5V12M18.0045 12.5V12M12.0045 12.5V12M7.00449 12.5C7.00449 11.9477 6.55677 11.5 6.00449 11.5C5.4522 11.5 5.00449 11.9477 5.00449 12.5C5.00449 13.0523 5.4522 13.5 6.00449 13.5C6.55677 13.5 7.00449 13.0523 7.00449 12.5ZM19.0045 12.5C19.0045 11.9477 18.5568 11.5 18.0045 11.5C17.4522 11.5 17.0045 11.9477 17.0045 12.5C17.0045 13.0523 17.4522 13.5 18.0045 13.5C18.5568 13.5 19.0045 13.0523 19.0045 12.5ZM13.0045 12.5C13.0045 11.9477 12.5568 11.5 12.0045 11.5C11.4522 11.5 11.0045 11.9477 11.0045 12.5C11.0045 13.0523 11.4522 13.5 12.0045 13.5C12.5568 13.5 13.0045 13.0523 13.0045 12.5Z"></path>
     </svg>
   );
 }
@@ -590,6 +695,104 @@ function ChevronDownIcon() {
       strokeLinejoin="round"
     >
       <polyline points="6 9 12 15 18 9" />
+    </svg>
+  );
+}
+
+function DatabaseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M3 12C3 7.75736 3 5.63604 4.31802 4.31802C5.63604 3 7.75736 3 12 3C16.2426 3 18.364 3 19.682 4.31802C21 5.63604 21 7.75736 21 12C21 16.2426 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2426 3 12Z"></path>
+      <path d="M3 12H21" strokeLinecap="round" strokeLinejoin="round"></path>
+      <path
+        d="M11 7.5L17 7.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+      <path
+        d="M7.125 7.5H7M7.25 7.5C7.25 7.63807 7.13807 7.75 7 7.75C6.86193 7.75 6.75 7.63807 6.75 7.5C6.75 7.36193 6.86193 7.25 7 7.25C7.13807 7.25 7.25 7.36193 7.25 7.5Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+      <path
+        d="M11 16.5L17 16.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+      <path
+        d="M7.125 16.5H7M7.25 16.5C7.25 16.6381 7.13807 16.75 7 16.75C6.86193 16.75 6.75 16.6381 6.75 16.5C6.75 16.3619 6.86193 16.25 7 16.25C7.13807 16.25 7.25 16.3619 7.25 16.5Z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      ></path>
+    </svg>
+  );
+}
+
+function MailsIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M13 3H16C18.8284 3 20.2426 3 21.1213 3.87868C22 4.75736 22 6.17157 22 9C22 11.8284 22 13.2426 21.1213 14.1213C20.2426 15 18.8284 15 16 15H13C10.1716 15 8.75736 15 7.87868 14.1213C7 13.2426 7 11.8284 7 9C7 6.17157 7 4.75736 7.87868 3.87868C8.75736 3 10.1716 3 13 3Z"></path>
+      <path d="M17 17.9358C16.9036 18.9318 16.6857 19.6022 16.1933 20.1025C15.3102 21 13.8888 21 11.0459 21H8.0306C5.18775 21 3.76632 21 2.88316 20.1025C2 19.2051 2 17.7606 2 14.8717C2 11.9828 2 10.5383 2.88316 9.64085C3.18449 9.33464 3.54848 9.1329 4.0102 9"></path>
+      <path d="M21.7585 6.12671L17.587 8.31597C16.083 9.1053 15.331 9.49996 14.5 9.49996C13.6691 9.49996 12.917 9.1053 11.413 8.31597L7.24152 6.12671"></path>
+    </svg>
+  );
+}
+
+function CallIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    >
+      <path d="M9.1585 5.71217L8.75584 4.80619C8.49256 4.21382 8.36092 3.91762 8.16405 3.69095C7.91732 3.40688 7.59571 3.19788 7.23592 3.08779C6.94883 2.99994 6.6247 2.99994 5.97645 2.99994C5.02815 2.99994 4.554 2.99994 4.15597 3.18223C3.68711 3.39696 3.26368 3.86322 3.09497 4.35054C2.95175 4.76423 2.99278 5.18937 3.07482 6.03964C3.94815 15.0901 8.91006 20.052 17.9605 20.9254C18.8108 21.0074 19.236 21.0484 19.6496 20.9052C20.137 20.7365 20.6032 20.3131 20.818 19.8442C21.0002 19.4462 21.0002 18.972 21.0002 18.0237C21.0002 17.3755 21.0002 17.0514 20.9124 16.7643C20.8023 16.4045 20.5933 16.0829 20.3092 15.8361C20.0826 15.6393 19.7864 15.5076 19.194 15.2443L18.288 14.8417C17.6465 14.5566 17.3257 14.414 16.9998 14.383C16.6878 14.3533 16.3733 14.3971 16.0813 14.5108C15.7762 14.6296 15.5066 14.8543 14.9672 15.3038C14.4304 15.7511 14.162 15.9748 13.834 16.0946C13.5432 16.2009 13.1588 16.2402 12.8526 16.1951C12.5071 16.1442 12.2426 16.0028 11.7135 15.7201C10.0675 14.8404 9.15977 13.9327 8.28011 12.2867C7.99738 11.7576 7.85602 11.4931 7.80511 11.1476C7.75998 10.8414 7.79932 10.457 7.90554 10.1662C8.02536 9.83822 8.24905 9.5698 8.69643 9.03294C9.14586 8.49362 9.37058 8.22396 9.48939 7.91885C9.60309 7.62688 9.64686 7.31234 9.61719 7.00042C9.58618 6.67446 9.44362 6.3537 9.1585 5.71217Z"></path>
+    </svg>
+  );
+}
+
+function NotesIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M10 11H13.5M10 7H17"></path>
+      <path d="M13 2H12.5C8.72877 2 6.84314 2 5.67157 3.17158C4.5 4.34315 4.5 6.22877 4.5 10V14C4.5 17.7712 4.5 19.6569 5.67157 20.8284C6.84315 22 8.72876 22 12.5 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V10C21 6.22877 21 4.34315 19.8284 3.17157C18.6569 2 16.7712 2 13 2Z"></path>
+      <path d="M6 6H3M6 12H3M6 18H3"></path>
     </svg>
   );
 }

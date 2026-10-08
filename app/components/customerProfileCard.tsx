@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, easeOut, motion } from "motion/react";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -95,10 +95,10 @@ export default function CustomerProfileCard() {
       {/* ── Two-column body ──────────────────────────────────────── */}
       <div className="flex flex-1 divide-x divide-zinc-200">
         {/* ── LEFT — customer details ──────────────────────────── */}
-        <div className="flex w-52 shrink-0 flex-col gap-4 p-4">
+        <div className="flex w-56 shrink-0 flex-col gap-6 p-4 ite">
           {/* Avatar + name */}
-          <div className="flex flex-col items-start gap-2">
-            <div className="relative h-10 w-10 overflow-hidden rounded-full">
+          <div className="flex flex-row items-start gap-4">
+            <div className="relative h-14 w-14 overflow-hidden rounded-full">
               <Image
                 src="/maya_chen.webp"
                 fill
@@ -110,19 +110,19 @@ export default function CustomerProfileCard() {
               <p className="text-sm font-medium text-zinc-800">
                 {profile.name}
               </p>
-              <div className="flex flex-row gap-1 text-[10px]">
+              <div className="text-normal flex flex-col text-xs mt-1">
                 <p className="text-zinc-600">{profile.role}</p>
-                <p className="text-zinc-600">({profile.company})</p>
+                <p className="text-zinc-600">at {profile.company}</p>
               </div>
             </div>
           </div>
 
           {/* Field list */}
-          <div className="mb-24 flex flex-col gap-2">
+          <div className="mb-18 flex flex-col gap-4">
             <Field label="Email" value={profile.email} isEmail />
-            <div className="flex flex-row items-end gap-2">
+            <div className="flex flex-row items-end gap-4">
               <Field label="Deal" value={profile.deal} />
-              <span className="inline-flex w-fit  items-baseline gap-1 rounded-full bg-blue-100 px-2 py-0.5 -my-0.5 text-[10px] font-medium text-blue-700">
+              <span className="-my-0.5 inline-flex w-fit items-baseline gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                 {profile.stage}
               </span>
@@ -131,7 +131,7 @@ export default function CustomerProfileCard() {
         </div>
 
         {/* ── RIGHT — interactions ─────────────────────────────── */}
-        <div className="flex h-75 flex-1 flex-col overflow-hidden">
+        <div className="flex h-80 flex-1 flex-col overflow-hidden">
           <div className="flex h-full scrollbar-none flex-col overflow-y-scroll">
             <AnimatePresence mode="popLayout" initial={false}>
               {visibleItems.map((item, index) => (
@@ -151,7 +151,10 @@ export default function CustomerProfileCard() {
                     filter: "blur(4px)",
                     y: -4,
                   }}
-                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{
+                    duration: 0.25,
+                    ease: [0.66, 0.99, 0.66, 0.99],
+                  }}
                   className={`flex flex-col gap-2 px-4 py-4 ${
                     index !== 0 ? "border-t border-zinc-200" : ""
                   } first:border-t-0`}
@@ -160,13 +163,15 @@ export default function CustomerProfileCard() {
                     <span className="text-xs font-medium text-zinc-800">
                       {item.title}
                     </span>
-                    <div className="flex shrink-0 items-center gap-1.5 text-[10px] whitespace-nowrap text-zinc-500">
-                      <ChannelIcon channel={item.channel} />
-                      <p className="whitespace-nowrap">{item.channel}</p>
+                    <div className="flex shrink-0 items-center gap-2 text-xs whitespace-nowrap text-zinc-600">
+                      <div className="flex flex-row gap-1 items-center">
+                        <ChannelIcon channel={item.channel} />
+                        <p className="whitespace-nowrap">{item.channel}</p>
+                      </div>
                       <p className="whitespace-nowrap">{item.date}</p>
                     </div>
                   </div>
-                  <p className="text-[10px] text-zinc-500">{item.body}</p>
+                  <p className="text-xs text-zinc-600 text-normal text-pretty">{item.body}</p>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -190,7 +195,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <p className="text-[10px] font-normal text-zinc-500">{label}</p>
+      <p className="text-xs font-normal text-zinc-500">{label}</p>
       {isEmail ? (
         <a
           href={`mailto:${value}`}
@@ -213,8 +218,8 @@ function ChannelIcon({ channel }: { channel: string }) {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        width="10"
-        height="10"
+        width="12"
+        height="12"
         color="currentColor"
         fill="none"
         stroke="currentColor"
@@ -230,8 +235,8 @@ function ChannelIcon({ channel }: { channel: string }) {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
-        width="10"
-        height="10"
+        width="12"
+        height="12"
         color="currentColor"
         fill="none"
         stroke="currentColor"
@@ -266,8 +271,8 @@ function ChannelIcon({ channel }: { channel: string }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      width="10"
-      height="10"
+      width="12"
+      height="12"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"

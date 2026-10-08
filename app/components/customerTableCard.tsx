@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { easeOut, motion } from "motion/react";
 
 interface CustomerRecord {
   customer: string;
@@ -88,8 +88,8 @@ export default function CustomerTableCard() {
           opacity: isHovered ? 1 : 0,
           translateY: isHovered ? 0 : 10,
         }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="pointer-events-none absolute -top-10 -left-15 z-20 flex w-75 flex-col items-start gap-4 rounded-2xl border border-zinc-200 bg-zinc-100 p-4 shadow-2xl"
+        transition={{ duration: 0.25, ease: easeOut }}
+        className="pointer-events-none absolute -top-10 -left-15 z-20 flex w-75 flex-col items-start gap-4 rounded-2xl border border-zinc-200 bg-zinc-100 p-4 shadow-xl"
       >
         <div className="flex w-full flex-row justify-between">
           <div className="flex flex-row gap-2">
@@ -112,29 +112,29 @@ export default function CustomerTableCard() {
             <ChevronRight />
           </div>
         </div>
-        <p className="text-[12px] text-zinc-800">
+        <p className="text-sm text-zinc-600">
           Maya is evaluating the CRM for 12-person sales team. Interested in
           pipeline visibility and automation.
         </p>
 
-        <div className="flex flex-col gap-1 text-[12px]">
+        <div className="flex flex-col gap-1 text-sm">
           <div className="flex flex-row items-center gap-2">
             <ClockIcon />
             <span className="font-medium">Last interaction — Sep 28</span>
           </div>
 
-          <p>
+          <p className="text-zinc-600">
             Reviewed the proposal and asked about workflows and data migration.
           </p>
         </div>
 
-        <div className="flex flex-col gap-1 text-[12px]">
+        <div className="flex flex-col gap-1 text-sm">
           <div className="flex flex-row items-center gap-2">
             <AIMailIcon />
             <span className="font-medium">Next step</span>
           </div>
 
-          <p>Send migration details and follow up Friday.</p>
+          <p className="text-zinc-600">Send migration details and follow up Friday.</p>
         </div>
       </motion.div>
 
@@ -154,7 +154,7 @@ export default function CustomerTableCard() {
         <div className="flex-1 overflow-x-auto">
           <table className="w-full border-collapse text-left">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] tracking-wide text-zinc-600">
+              <tr className="border-b border-zinc-200 bg-zinc-50 text-xs tracking-wide text-zinc-600">
                 <th className="px-4 py-2 font-normal">Customer</th>
                 <th className="px-4 py-2 font-normal">Role</th>
                 <th className="px-4 py-2 font-normal">Company</th>
@@ -184,7 +184,7 @@ export default function CustomerTableCard() {
                     <td className="px-4 py-2 text-zinc-600">{row.role}</td>
 
                     {/* Company */}
-                    <td className="px-4 py-2 font-medium text-zinc-700">
+                    <td className="px-4 py-2 font-normal text-zinc-700">
                       {row.company}
                     </td>
 
@@ -200,9 +200,9 @@ export default function CustomerTableCard() {
         </div>
 
         {/* ── Footer ──────────────────────────────────────────────── */}
-        <footer className="mt-12 flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-4 py-2 text-[10px] text-zinc-400">
+        <footer className="mt-12 flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-4 py-2 text-xs text-zinc-600">
           <span>Showing 4 of 4 customers</span>
-          <span className="text-zinc-500">Real-time Context</span>
+          <span className="text-zinc-600">Real-time Context</span>
         </footer>
       </div>
     </div>
@@ -231,9 +231,8 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-normal ${styles[status]}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${dotStyles[status]}`} />
       {status}
     </span>
   );
