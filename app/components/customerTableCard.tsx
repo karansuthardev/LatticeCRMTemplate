@@ -3,6 +3,7 @@
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { easeOut, motion } from "motion/react";
+import { CursorIcon, ClockIcon, AIMailIcon, ChevronRight } from "../icons";
 
 interface CustomerRecord {
   customer: string;
@@ -78,7 +79,7 @@ export default function CustomerTableCard() {
           opacity: { duration: 0.2 },
         }}
       >
-        <CursorIcon />
+        <CursorIcon width={18} height={18} />
       </motion.div>
 
       {/* ── Hover Popup Card ────────────────────────────────────── */}
@@ -109,7 +110,7 @@ export default function CustomerTableCard() {
             </div>
           </div>
           <div className="self-center text-zinc-600">
-            <ChevronRight />
+            <ChevronRight width={14} height={14} />
           </div>
         </div>
         <p className="text-sm text-zinc-600">
@@ -119,7 +120,7 @@ export default function CustomerTableCard() {
 
         <div className="flex flex-col gap-1 text-sm">
           <div className="flex flex-row items-center gap-2">
-            <ClockIcon />
+            <ClockIcon width={14} height={14} />
             <span className="font-medium">Last interaction — Sep 28</span>
           </div>
 
@@ -130,7 +131,7 @@ export default function CustomerTableCard() {
 
         <div className="flex flex-col gap-1 text-sm">
           <div className="flex flex-row items-center gap-2">
-            <AIMailIcon />
+            <AIMailIcon width={14} height={14} />
             <span className="font-medium">Next step</span>
           </div>
 
@@ -238,85 +239,4 @@ function StatusBadge({
   );
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 
-function CursorIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      color="currentColor"
-      fill="var(--color-zinc-100)"
-      stroke="currentColor"
-      strokeWidth="1.1"
-      strokeLinejoin="round"
-    >
-      <path d="M5.10772 14.3857L5.58594 7.91256C5.61875 7.46854 5.64642 7.05187 5.67232 6.66186C5.85017 3.98379 5.94481 2.55876 7.04807 2.10979C8.15132 1.66082 9.2022 2.61969 11.1771 4.42168C11.4647 4.68413 11.772 4.96446 12.1018 5.26093L16.9102 9.58273C18.2626 10.7983 18.9389 11.4062 18.9934 11.9885C19.0309 12.3882 18.9067 12.7862 18.6489 13.0924C18.2733 13.5385 17.3734 13.6473 15.5737 13.8647C14.8156 13.9563 14.4365 14.0021 14.2073 14.2038C14.0479 14.344 13.9376 14.5321 13.8925 14.7404C13.8277 15.0399 13.9707 15.3964 14.2567 16.1095L15.7394 19.8058C15.9107 20.2328 15.9963 20.4464 15.995 20.6429C15.9932 20.9078 15.8865 21.1609 15.6986 21.3462C15.5591 21.4837 15.3471 21.57 14.9232 21.7425C14.4993 21.915 14.2873 22.0013 14.0921 22C13.8292 21.9982 13.5778 21.8907 13.3939 21.7015C13.2574 21.561 13.1717 21.3475 13.0004 20.9204L11.5177 17.2241C11.2317 16.5111 11.0887 16.1545 10.8355 15.9844C10.6595 15.8662 10.4503 15.8081 10.239 15.8187C9.935 15.834 9.63074 16.0663 9.02224 16.5308C7.57763 17.6337 6.85532 18.1851 6.27746 18.1269C5.88085 18.0871 5.51701 17.8877 5.26831 17.574C4.90595 17.1169 4.9732 16.2065 5.10772 14.3857Z" />
-    </svg>
-  );
-}
-
-function ClockIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C7.52232 2 3.77426 4.94289 2.5 9H5"></path>
-      <path d="M12 8V12L14 14"></path>
-      <path d="M2 12C2 12.3373 2.0152 12.6709 2.04494 13M9 22C8.6584 21.8876 8.32471 21.7564 8 21.6078M3.20939 17C3.01655 16.6284 2.84453 16.2433 2.69497 15.8462M4.83122 19.3065C5.1369 19.6358 5.46306 19.9441 5.80755 20.2292"></path>
-    </svg>
-  );
-}
-
-function AIMailIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-    >
-      <path d="M2 5.5L8.91302 9.41697C11.4616 10.861 12.5384 10.861 15.087 9.41697L22 5.5"></path>
-      <path
-        d="M21.9842 12.9756C22.0053 11.9899 22.0053 11.0101 21.9842 10.0244C21.9189 6.95886 21.8862 5.42609 20.7551 4.29066C19.6239 3.15523 18.0497 3.11568 14.9012 3.03657C12.9607 2.98781 11.0393 2.98781 9.09882 3.03656C5.95033 3.11566 4.37608 3.15521 3.24495 4.29065C2.11382 5.42608 2.08114 6.95885 2.01576 10.0244C1.99474 11.0101 1.99475 11.9899 2.01577 12.9756C2.08114 16.0412 2.11383 17.5739 3.24496 18.7094C4.37608 19.8448 5.95033 19.8843 9.09883 19.9634C10.404 19.9962 11.7005 20.007 13 19.9957"
-        strokeLinecap="round"
-      ></path>
-      <path d="M18.5 14L18.7579 14.697C19.0961 15.611 19.2652 16.068 19.5986 16.4014C19.932 16.7348 20.389 16.9039 21.303 17.2421L22 17.5L21.303 17.7579C20.389 18.0961 19.932 18.2652 19.5986 18.5986C19.2652 18.932 19.0961 19.389 18.7579 20.303L18.5 21L18.2421 20.303C17.9039 19.389 17.7348 18.932 17.4014 18.5986C17.068 18.2652 16.611 18.0961 15.697 17.7579L15 17.5L15.697 17.2421C16.611 16.9039 17.068 16.7348 17.4014 16.4014C17.7348 16.068 17.9039 15.611 18.2421 14.697L18.5 14Z"></path>
-    </svg>
-  );
-}
-
-function ChevronRight() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9.00005 18C9.00005 18 15 13.5811 15 12C15 10.4188 9 6 9 6"></path>
-    </svg>
-  );
-}

@@ -2,6 +2,20 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, easeOut } from "motion/react";
+import {
+  PlusIcon,
+  ArrowUpIcon,
+  RedoIcon,
+  MenuDotsIcon,
+  LoadingSpinner,
+  FileTextIcon,
+  ChevronDownIcon,
+  DatabaseIcon,
+  MailsIcon,
+  CallIcon,
+  NotesIcon,
+  CloseIcon,
+} from "../icons";
 
 interface ContextFile {
   name: string;
@@ -232,7 +246,7 @@ export default function AgentChatCard() {
             {(phase === "thinking" || phase === "collecting") && (
               <div className="flex flex-col gap-1 rounded-xl text-xs">
                 <div className="flex items-center gap-2">
-                  <LoadingSpinner />
+                  <LoadingSpinner width={11} height={11} />
                   <span className="font-medium text-zinc-700">
                     {phase === "thinking" ? "Thinking…" : "Collecting context…"}
                   </span>
@@ -275,7 +289,7 @@ export default function AgentChatCard() {
                 <div className="flex flex-col gap-1 text-xs">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5 font-mono text-zinc-700">
-                      <FileTextIcon />
+                      <FileTextIcon width={11} height={11} />
                       <span>{contextFiles[0].name}</span>
                     </div>
 
@@ -292,7 +306,7 @@ export default function AgentChatCard() {
                         transition={{ duration: 0.2 }}
                         className="inline-block"
                       >
-                        <ChevronDownIcon />
+                        <ChevronDownIcon width={11} height={11} />
                       </motion.span>
                     </button>
                   </div>
@@ -311,7 +325,7 @@ export default function AgentChatCard() {
                             key={file.name}
                             className="flex items-center gap-1.5 font-mono text-zinc-600"
                           >
-                            <FileTextIcon />
+                            <FileTextIcon width={11} height={11} />
                             <span>{file.name}</span>
                           </div>
                         ))}
@@ -381,7 +395,7 @@ export default function AgentChatCard() {
                         className="-mx-2 flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-1 text-zinc-600 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
                         title="Redo analysis"
                       >
-                        <RedoIcon />
+                        <RedoIcon width={12} height={12} />
                         <span>Redo</span>
                       </button>
 
@@ -392,7 +406,7 @@ export default function AgentChatCard() {
                         className="flex h-5 w-5 items-center justify-center rounded-md bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
                         title="More options"
                       >
-                        <MenuDotsIcon />
+                        <MenuDotsIcon width={12} height={12} />
                       </button>
                     </div>
                   </motion.div>
@@ -438,7 +452,7 @@ export default function AgentChatCard() {
                   className="group flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-xs text-zinc-700 hover:bg-zinc-200"
                 >
                   <span className="shrink-0 text-zinc-600">
-                    <Icon />
+                    <Icon width={12} height={12} />
                   </span>
                   <span className="w-full text-start">{label}</span>
                 </button>
@@ -452,10 +466,10 @@ export default function AgentChatCard() {
           <div className="mb-1 flex items-center gap-1.5 px-1">
             <span className="inline-flex items-center gap-1.5 rounded-md bg-zinc-200 px-2 py-1 text-xs text-zinc-700">
               <span className="shrink-0 text-zinc-600">
-                {selectedAttachment === "CRM Deal Records" && <DatabaseIcon />}
-                {selectedAttachment === "Email History" && <MailsIcon />}
-                {selectedAttachment === "Call Transcripts" && <CallIcon />}
-                {selectedAttachment === "Meeting Notes" && <NotesIcon />}
+                {selectedAttachment === "CRM Deal Records" && <DatabaseIcon width={12} height={12} />}
+                {selectedAttachment === "Email History" && <MailsIcon width={12} height={12} />}
+                {selectedAttachment === "Call Transcripts" && <CallIcon width={12} height={12} />}
+                {selectedAttachment === "Meeting Notes" && <NotesIcon width={12} height={12} />}
               </span>
               <span>{selectedAttachment}</span>
               <button
@@ -463,20 +477,7 @@ export default function AgentChatCard() {
                 onClick={() => setSelectedAttachment(null)}
                 className="ml-1 text-zinc-400 hover:text-zinc-600"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="12"
-                  height="12"
-                  color="currentColor"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M18 6L6.00081 17.9992M17.9992 18L6 6.00085"></path>
-                </svg>
+                <CloseIcon width={12} height={12} />
               </button>
             </span>
           </div>
@@ -491,7 +492,7 @@ export default function AgentChatCard() {
             }`}
             title="Attach context resources"
           >
-            <PlusIcon />
+            <PlusIcon width={16} height={16} />
           </button>
           {/* Add Icon (+) */}
 
@@ -524,7 +525,7 @@ export default function AgentChatCard() {
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-100 transition-colors hover:bg-zinc-700"
             title="Send query"
           >
-            <ArrowUpIcon />
+            <ArrowUpIcon width={12} height={12} />
           </motion.button>
         </div>
       </footer>
@@ -532,267 +533,4 @@ export default function AgentChatCard() {
   );
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 
-function PlusIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12.001 5.00003V19.002"></path>
-      <path d="M19.002 12.002L4.99998 12.002"></path>
-    </svg>
-  );
-}
-
-function ArrowUpIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M8.87038 6.13264L14.7327 4.19538C18.033 3.10476 19.6831 2.55945 20.5579 3.43426C21.4327 4.30907 20.8874 5.95922 19.7968 9.25953L17.8595 15.1218C16.6236 18.8619 16.0056 20.7319 14.8796 20.9603C14.6411 21.0087 14.3955 21.0129 14.1549 20.9727C13.019 20.7832 12.3132 18.9359 10.9016 15.2413C10.6328 14.5376 10.4983 14.1858 10.2574 13.9127C10.2018 13.8497 10.1424 13.7903 10.0795 13.7348C9.80638 13.4938 9.45455 13.3594 8.75089 13.0906C5.05627 11.679 3.20896 10.9732 3.01945 9.83727C2.97931 9.59669 2.98353 9.35108 3.03189 9.11259C3.26025 7.98657 5.13029 7.36859 8.87038 6.13264Z"></path>
-      <path d="M12.8008 11.1865L15.498 8.48926"></path>
-    </svg>
-  );
-}
-
-function RedoIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16.5 7.99976H18C19.4142 7.99976 20.1213 7.99976 20.5607 7.56042C21 7.12108 21 6.41397 21 4.99976V3.49976"></path>
-      <path d="M3 11.9998C3 7.02919 7.0293 2.99976 12 2.99976C15.571 2.99976 18.0948 4.73029 20 7.08347M21 11.9998C21 16.9703 16.9707 20.9998 12 20.9998C8.42904 20.9998 5.90524 19.2692 4 16.916"></path>
-      <path d="M7.5 15.9998H6C4.58579 15.9998 3.87868 15.9998 3.43934 16.4391C3 16.8784 3 17.5855 3 18.9998V20.4998"></path>
-    </svg>
-  );
-}
-
-function MenuDotsIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M6.00449 12.5V12M18.0045 12.5V12M12.0045 12.5V12M7.00449 12.5C7.00449 11.9477 6.55677 11.5 6.00449 11.5C5.4522 11.5 5.00449 11.9477 5.00449 12.5C5.00449 13.0523 5.4522 13.5 6.00449 13.5C6.55677 13.5 7.00449 13.0523 7.00449 12.5ZM19.0045 12.5C19.0045 11.9477 18.5568 11.5 18.0045 11.5C17.4522 11.5 17.0045 11.9477 17.0045 12.5C17.0045 13.0523 17.4522 13.5 18.0045 13.5C18.5568 13.5 19.0045 13.0523 19.0045 12.5ZM13.0045 12.5C13.0045 11.9477 12.5568 11.5 12.0045 11.5C11.4522 11.5 11.0045 11.9477 11.0045 12.5C11.0045 13.0523 11.4522 13.5 12.0045 13.5C12.5568 13.5 13.0045 13.0523 13.0045 12.5Z"></path>
-    </svg>
-  );
-}
-
-function PaperclipIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="11"
-      height="11"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-    </svg>
-  );
-}
-
-function LoadingSpinner() {
-  return (
-    <svg
-      className="animate-spin text-zinc-500"
-      xmlns="http://www.w3.org/2000/svg"
-      width="11"
-      height="11"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-      />
-    </svg>
-  );
-}
-
-function FileTextIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="11"
-      height="11"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-zinc-500"
-    >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  );
-}
-
-function ChevronDownIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="11"
-      height="11"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-function DatabaseIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <path d="M3 12C3 7.75736 3 5.63604 4.31802 4.31802C5.63604 3 7.75736 3 12 3C16.2426 3 18.364 3 19.682 4.31802C21 5.63604 21 7.75736 21 12C21 16.2426 21 18.364 19.682 19.682C18.364 21 16.2426 21 12 21C7.75736 21 5.63604 21 4.31802 19.682C3 18.364 3 16.2426 3 12Z"></path>
-      <path d="M3 12H21" strokeLinecap="round" strokeLinejoin="round"></path>
-      <path
-        d="M11 7.5L17 7.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      ></path>
-      <path
-        d="M7.125 7.5H7M7.25 7.5C7.25 7.63807 7.13807 7.75 7 7.75C6.86193 7.75 6.75 7.63807 6.75 7.5C6.75 7.36193 6.86193 7.25 7 7.25C7.13807 7.25 7.25 7.36193 7.25 7.5Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      ></path>
-      <path
-        d="M11 16.5L17 16.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      ></path>
-      <path
-        d="M7.125 16.5H7M7.25 16.5C7.25 16.6381 7.13807 16.75 7 16.75C6.86193 16.75 6.75 16.6381 6.75 16.5C6.75 16.3619 6.86193 16.25 7 16.25C7.13807 16.25 7.25 16.3619 7.25 16.5Z"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      ></path>
-    </svg>
-  );
-}
-
-function MailsIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M13 3H16C18.8284 3 20.2426 3 21.1213 3.87868C22 4.75736 22 6.17157 22 9C22 11.8284 22 13.2426 21.1213 14.1213C20.2426 15 18.8284 15 16 15H13C10.1716 15 8.75736 15 7.87868 14.1213C7 13.2426 7 11.8284 7 9C7 6.17157 7 4.75736 7.87868 3.87868C8.75736 3 10.1716 3 13 3Z"></path>
-      <path d="M17 17.9358C16.9036 18.9318 16.6857 19.6022 16.1933 20.1025C15.3102 21 13.8888 21 11.0459 21H8.0306C5.18775 21 3.76632 21 2.88316 20.1025C2 19.2051 2 17.7606 2 14.8717C2 11.9828 2 10.5383 2.88316 9.64085C3.18449 9.33464 3.54848 9.1329 4.0102 9"></path>
-      <path d="M21.7585 6.12671L17.587 8.31597C16.083 9.1053 15.331 9.49996 14.5 9.49996C13.6691 9.49996 12.917 9.1053 11.413 8.31597L7.24152 6.12671"></path>
-    </svg>
-  );
-}
-
-function CallIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    >
-      <path d="M9.1585 5.71217L8.75584 4.80619C8.49256 4.21382 8.36092 3.91762 8.16405 3.69095C7.91732 3.40688 7.59571 3.19788 7.23592 3.08779C6.94883 2.99994 6.6247 2.99994 5.97645 2.99994C5.02815 2.99994 4.554 2.99994 4.15597 3.18223C3.68711 3.39696 3.26368 3.86322 3.09497 4.35054C2.95175 4.76423 2.99278 5.18937 3.07482 6.03964C3.94815 15.0901 8.91006 20.052 17.9605 20.9254C18.8108 21.0074 19.236 21.0484 19.6496 20.9052C20.137 20.7365 20.6032 20.3131 20.818 19.8442C21.0002 19.4462 21.0002 18.972 21.0002 18.0237C21.0002 17.3755 21.0002 17.0514 20.9124 16.7643C20.8023 16.4045 20.5933 16.0829 20.3092 15.8361C20.0826 15.6393 19.7864 15.5076 19.194 15.2443L18.288 14.8417C17.6465 14.5566 17.3257 14.414 16.9998 14.383C16.6878 14.3533 16.3733 14.3971 16.0813 14.5108C15.7762 14.6296 15.5066 14.8543 14.9672 15.3038C14.4304 15.7511 14.162 15.9748 13.834 16.0946C13.5432 16.2009 13.1588 16.2402 12.8526 16.1951C12.5071 16.1442 12.2426 16.0028 11.7135 15.7201C10.0675 14.8404 9.15977 13.9327 8.28011 12.2867C7.99738 11.7576 7.85602 11.4931 7.80511 11.1476C7.75998 10.8414 7.79932 10.457 7.90554 10.1662C8.02536 9.83822 8.24905 9.5698 8.69643 9.03294C9.14586 8.49362 9.37058 8.22396 9.48939 7.91885C9.60309 7.62688 9.64686 7.31234 9.61719 7.00042C9.58618 6.67446 9.44362 6.3537 9.1585 5.71217Z"></path>
-    </svg>
-  );
-}
-
-function NotesIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="12"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M10 11H13.5M10 7H17"></path>
-      <path d="M13 2H12.5C8.72877 2 6.84314 2 5.67157 3.17158C4.5 4.34315 4.5 6.22877 4.5 10V14C4.5 17.7712 4.5 19.6569 5.67157 20.8284C6.84315 22 8.72876 22 12.5 22H13C16.7712 22 18.6569 22 19.8284 20.8284C21 19.6569 21 17.7712 21 14V10C21 6.22877 21 4.34315 19.8284 3.17157C18.6569 2 16.7712 2 13 2Z"></path>
-      <path d="M6 6H3M6 12H3M6 18H3"></path>
-    </svg>
-  );
-}

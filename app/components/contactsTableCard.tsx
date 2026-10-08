@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { CursorIcon, DashIcon } from "../icons";
 
 // ── Data types ────────────────────────────────────────────────────────────────
 
@@ -206,7 +207,7 @@ export default function ContactsTableCard() {
           opacity: { duration: phase === "idle" ? 0 : 0.35 },
         }}
       >
-        <CursorIcon />
+        <CursorIcon width={18} height={18} />
       </motion.div>
 
       {/* ── Card Header ─────────────────────────────────────────── */}
@@ -223,7 +224,7 @@ export default function ContactsTableCard() {
       <div className="flex-1 overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>
-            <tr className="border-b border-zinc-200 bg-zinc-50 text-[10px] tracking-wide text-zinc-600">
+            <tr className="border-b border-zinc-200 bg-zinc-50 text-xs tracking-wide text-zinc-600">
               <th className="px-4 py-2 font-normal">Company</th>
               <th className="px-4 py-2 font-normal">Contact</th>
               <th className="px-4 py-2 font-normal">Email</th>
@@ -279,13 +280,13 @@ export default function ContactsTableCard() {
                       <div className="relative">
                         {/* Dash — always in DOM, fades out */}
                         <motion.span
-                          className="text-zinc-400"
+                          className="text-zinc-600"
                           animate={{
                             opacity: isOptimized ? 0 : 1,
                           }}
                           transition={{ duration: 0.2 }}
                         >
-                          <DashIcon />
+                          <DashIcon width={24} height={12} />
                         </motion.span>
                         {/* Filled value — always in DOM, blurs in */}
                         <motion.div
@@ -314,18 +315,18 @@ export default function ContactsTableCard() {
                     )}
                   </td>
 
-                  {/* Email */}
+                    {/* Email */}
                   <td className="px-4 py-2">
                     {emailEmpty ? (
                       <div className="relative">
                         <motion.span
-                          className="text-zinc-400"
+                          className="text-zinc-600"
                           animate={{
                             opacity: isOptimized ? 0 : 1,
                           }}
                           transition={{ duration: 0.2 }}
                         >
-                          <DashIcon />
+                          <DashIcon width={24} height={12} />
                         </motion.span>
                         <motion.a
                           href={`mailto:${emailVal}`}
@@ -358,13 +359,13 @@ export default function ContactsTableCard() {
                     {statusEmpty ? (
                       <div className="relative">
                         <motion.span
-                          className="text-zinc-400"
+                          className="text-zinc-600"
                           animate={{
                             opacity: isOptimized ? 0 : 1,
                           }}
                           transition={{ duration: 0.2 }}
                         >
-                          <DashIcon />
+                          <DashIcon width={24} height={12} />
                         </motion.span>
                         <motion.span
                           className="absolute inset-0 flex items-center"
@@ -391,13 +392,13 @@ export default function ContactsTableCard() {
                     {industryEmpty ? (
                       <div className="relative">
                         <motion.span
-                          className="text-zinc-400"
+                          className="text-zinc-600"
                           animate={{
                             opacity: isOptimized ? 0 : 1,
                           }}
                           transition={{ duration: 0.2 }}
                         >
-                          <DashIcon />
+                          <DashIcon width={24} height={12} />
                         </motion.span>
                         <motion.span
                           className="absolute inset-0 flex items-center"
@@ -411,13 +412,13 @@ export default function ContactsTableCard() {
                             ease: "easeOut",
                           }}
                         >
-                          <span className="inline-block rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] text-zinc-600">
+                          <span className="inline-block rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs text-zinc-600">
                             {industryVal}
                           </span>
                         </motion.span>
                       </div>
                     ) : (
-                      <span className="inline-block rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] text-zinc-600">
+                      <span className="inline-block rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs text-zinc-600">
                         {row.industry}
                       </span>
                     )}
@@ -430,17 +431,17 @@ export default function ContactsTableCard() {
       </div>
 
       {/* ── Footer ──────────────────────────────────────────────── */}
-      <footer className="mt-12 flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-4 pr-2 py-2 text-[10px] text-zinc-400">
+      <footer className="mt-12 flex items-center justify-between border-t border-zinc-200 bg-zinc-50 px-4 pr-2 py-2 text-xs text-zinc-600">
         <span>Showing 5 of 5</span>
         <motion.button
           ref={buttonRef}
           className="rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-zinc-200 hover:bg-zinc-700"
           animate={
             isClicking
-              ? { scale: 0.99, background: "var(--color-zinc-700)" }
+              ? { scale: 0.95, background: "var(--color-zinc-700)" }
               : { scale: 1, background: "var(--color-zinc-800)" }
           }
-          transition={{ type: "spring", stiffness: 500, damping: 20 }}
+          transition={{ duration: 0.25, ease: [0.10, 0.90, 0.10, 0.90] }}
         >
           Optimize Data
         </motion.button>
@@ -465,49 +466,11 @@ function StatusBadge({ status }: { status: "Lead" | "Customer" | "Prospect" }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${styles[status]}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-normal ${styles[status]}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${dotStyles[status]}`} />
       {status}
     </span>
   );
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 
-function CursorIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      color="currentColor"
-      fill="var(--color-zinc-100)"
-      stroke="currentColor"
-      strokeWidth="1.1"
-      strokeLinejoin="round"
-    >
-      <path d="M5.10772 14.3857L5.58594 7.91256C5.61875 7.46854 5.64642 7.05187 5.67232 6.66186C5.85017 3.98379 5.94481 2.55876 7.04807 2.10979C8.15132 1.66082 9.2022 2.61969 11.1771 4.42168C11.4647 4.68413 11.772 4.96446 12.1018 5.26093L16.9102 9.58273C18.2626 10.7983 18.9389 11.4062 18.9934 11.9885C19.0309 12.3882 18.9067 12.7862 18.6489 13.0924C18.2733 13.5385 17.3734 13.6473 15.5737 13.8647C14.8156 13.9563 14.4365 14.0021 14.2073 14.2038C14.0479 14.344 13.9376 14.5321 13.8925 14.7404C13.8277 15.0399 13.9707 15.3964 14.2567 16.1095L15.7394 19.8058C15.9107 20.2328 15.9963 20.4464 15.995 20.6429C15.9932 20.9078 15.8865 21.1609 15.6986 21.3462C15.5591 21.4837 15.3471 21.57 14.9232 21.7425C14.4993 21.915 14.2873 22.0013 14.0921 22C13.8292 21.9982 13.5778 21.8907 13.3939 21.7015C13.2574 21.561 13.1717 21.3475 13.0004 20.9204L11.5177 17.2241C11.2317 16.5111 11.0887 16.1545 10.8355 15.9844C10.6595 15.8662 10.4503 15.8081 10.239 15.8187C9.935 15.834 9.63074 16.0663 9.02224 16.5308C7.57763 17.6337 6.85532 18.1851 6.27746 18.1269C5.88085 18.0871 5.51701 17.8877 5.26831 17.574C4.90595 17.1169 4.9732 16.2065 5.10772 14.3857Z" />
-    </svg>
-  );
-}
-
-function DashIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="24"
-      height="12"
-      color="currentColor"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2.5 12L21.5002 12" />
-    </svg>
-  );
-}
