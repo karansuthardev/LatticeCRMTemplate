@@ -164,7 +164,7 @@ export default function AgentChatCard() {
       timers.push(
         setTimeout(() => {
           startCycle();
-        }, typingDuration + 500 + 13000),
+        }, typingDuration + 500 + 6000),
       );
     }
 
@@ -246,7 +246,7 @@ export default function AgentChatCard() {
             {(phase === "thinking" || phase === "collecting") && (
               <div className="flex flex-col gap-1 rounded-xl text-xs">
                 <div className="flex items-center gap-2">
-                  <LoadingSpinner width={11} height={11} />
+                    <LoadingSpinner width={16} height={16} />
                   <span className="font-medium text-zinc-700">
                     {phase === "thinking" ? "Thinking…" : "Collecting context…"}
                   </span>
@@ -395,7 +395,7 @@ export default function AgentChatCard() {
                         className="-mx-2 flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-1 text-zinc-600 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-800 active:scale-95"
                         title="Redo analysis"
                       >
-                        <RedoIcon width={12} height={12} />
+                        <RedoIcon width={10} height={10} />
                         <span>Redo</span>
                       </button>
 
@@ -419,18 +419,16 @@ export default function AgentChatCard() {
       </div>
 
       {/* ── Bottom Message Input Panel ───────────────────────────── */}
-      <footer className="relative shrink p-2">
+      <footer className="relative shrink-0 p-2">
         {/* Attachment Popup Menu when Add is pressed */}
         <AnimatePresence>
           {showAttachMenu && (
             <motion.div
-              initial={{ opacity: 0, y: 4, x: -4, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{
                 opacity: 0,
                 y: 4,
-                x: -4,
-                scale: 0.97,
                 transition: { duration: 0.1, ease: easeOut },
               }}
               transition={{ duration: 0.15, ease: easeOut }}
@@ -454,7 +452,7 @@ export default function AgentChatCard() {
                   <span className="shrink-0 text-zinc-600">
                     <Icon width={12} height={12} />
                   </span>
-                  <span className="w-full text-start">{label}</span>
+                  <span className="flex-1 text-left whitespace-nowrap">{label}</span>
                 </button>
               ))}
             </motion.div>
