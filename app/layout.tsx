@@ -69,60 +69,18 @@ const generalSans = localFont({
   ],
   variable: "--font-general-sans",
 });
-const gambetta = localFont({
+const merriweather = localFont({
   src: [
     {
-      path: "./fonts/Gambetta-Light.woff2",
-      weight: "300",
+      path: "./fonts/Merriweather-VariableFont_opsz,wdth,wght.woff2",
       style: "normal",
     },
     {
-      path: "./fonts/Gambetta-LightItalic.woff2",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Gambetta-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Gambetta-Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Gambetta-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Gambetta-MediumItalic.woff2",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Gambetta-Semibold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Gambetta-SemiboldItalic.woff2",
-      weight: "600",
-      style: "italic",
-    },
-    {
-      path: "./fonts/Gambetta-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Gambetta-BoldItalic.woff2",
-      weight: "700",
+      path: "./fonts/Merriweather-Italic-VariableFont_opsz,wdth,wght.woff2",
       style: "italic",
     },
   ],
-  variable: "--font-gambetta",
+  variable: "--font-merriweather",
 });
 
 export const metadata: Metadata = {
@@ -138,11 +96,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${generalSans.className} ${generalSans.variable} ${gambetta.variable}  h-full antialiased`}
+      className={`${generalSans.className} ${generalSans.variable} ${merriweather.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange -950">
         <Navbar />
-        <div className="min-h-screen w-full">{children}</div>
+        <div className="flex flex-1 flex-col w-full">{children}</div>
       </body>
     </html>
   );

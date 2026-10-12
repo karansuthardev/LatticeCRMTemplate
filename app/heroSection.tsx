@@ -28,7 +28,7 @@ export default function HeroSection() {
 
       <h1 className="font-regular mt-14 text-6xl font-medium tracking-tighter">
         The{" "}
-        <span className="font-serif text-7xl font-semibold italic">
+        <span className="font-serif text-6xl px-0.5 font-medium italic">
           Agentic Era
         </span>{" "}
         of CRMs

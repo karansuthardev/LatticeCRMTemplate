@@ -134,7 +134,7 @@ const features: FeatureItem[] = [
 
 export default function FeaturesSection() {
   return (
-    <div className="mt-24 mb-24 flex w-full flex-col items-start justify-start">
+    <div className="mt-48 mb-24 flex w-full flex-col items-start justify-start">
       <div className="mb-6 flex w-full flex-col items-center gap-2 px-6 py-4">
         <p className="text-5xl font-medium text-zinc-800">
           Grow with less to manage.

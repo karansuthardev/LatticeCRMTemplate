@@ -1,6 +1,7 @@
 "use client";
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -8,7 +9,7 @@ export default function Navbar() {
   return (
     <div className="sticky top-0 z-100 w-full bg-zinc-100/90 backdrop-blur-xs">
       <div className="relative mx-auto flex max-w-7xl flex-row items-center justify-between border-x border-zinc-200 px-4 py-4">
-        <div className="mb-1 flex cursor-pointer flex-row items-center gap-2">
+        <Link href="/" className="mb-1 flex cursor-pointer select-none flex-row items-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -30,7 +31,7 @@ export default function Navbar() {
           <p className="text-2xl font-black text-zinc-900">
             La<span className="italic mr-px tracking-wide">tt</span>ice
           </p>
-        </div>
+        </Link>
 
         <div className="text-sm absolute inset-x-0 mx-auto flex h-fit w-fit flex-row items-center gap-4 text-zinc-800 mix">
           <div className="h-fit cursor-pointer rounded-xl border-none px-3 py-1 font-medium transition-colors duration-150 hover:bg-zinc-200">
