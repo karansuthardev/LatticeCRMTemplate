@@ -5,7 +5,7 @@ export default function NotFound() {
         <div className="pointer-events-none absolute inset-0 z-10 m-auto flex h-fit w-fit select-none flex-col text-center text-[min(38vw,520px)] font-semibold text-zinc-200/60">
           <p className="leading-[0.8]">404</p>
         </div>
-        <p className="absolute inset-0 z-20 m-auto h-fit w-fit font-serif text-xl font-medium tracking-wide text-zinc-800 whitespace-pre-wrap leading-[1.75]">
+        <p className="absolute inset-0 z-20 m-auto h-fit w-fit text-xl font-medium tracking-wide text-zinc-800 whitespace-pre-wrap leading-[1.75]">
           {`
         "I look for it in the deepest ocean
          I looked for it in the core of the earth

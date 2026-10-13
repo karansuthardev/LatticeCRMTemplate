@@ -17,7 +17,7 @@ export default function TestimonialSection() {
 
         {/* Right: Testimonial content */}
         <div className="flex h-full flex-1 flex-col items-start justify-between gap-6 p-2">
-          <blockquote className="font-serif text-xl leading-normal font-normal text-pretty text-zinc-800">
+          <blockquote className="text-xl leading-normal font-normal text-pretty text-zinc-800">
             “Quanta has taken a lot of the friction out of our sales
             process. We spend less time chasing updates, piecing together
             customer history, and figuring out what needs attention. Our

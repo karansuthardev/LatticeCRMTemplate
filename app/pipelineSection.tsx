@@ -557,7 +557,7 @@ export default function PipelineSection() {
       <div className="mx-auto mt-12 mb-10 flex w-fit flex-col gap-6 ">
         <div className="flex flex-col items-center justify-between gap-px">
           <h2 className="text-5xl font-medium tracking-tight leading-[1] text-zinc-800">
-            Pipeline<span className="italic font-serif font-semibold text-[3.15rem] text-orange-600 text-shadow-xs text-shadow-orange-900/20"> Intelligence.</span> 
+            Pipeline<span className="italic font-medium text-orange-600"> Intelligence.</span> 
           </h2>
           <p className="text-md mt-4 text-center font-medium tracking-wide text-zinc-500 ">
             Improve sales conversions with an intelligent pipeline that 

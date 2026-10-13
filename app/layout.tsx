@@ -69,19 +69,6 @@ const generalSans = localFont({
   ],
   variable: "--font-general-sans",
 });
-const merriweather = localFont({
-  src: [
-    {
-      path: "./fonts/Merriweather-VariableFont_opsz,wdth,wght.woff2",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Merriweather-Italic-VariableFont_opsz,wdth,wght.woff2",
-      style: "italic",
-    },
-  ],
-  variable: "--font-merriweather",
-});
 
 export const metadata: Metadata = {
   title: "Lattice",
@@ -96,7 +83,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${generalSans.className} ${generalSans.variable} ${merriweather.variable} h-full antialiased`}
+      className={`${generalSans.className} ${generalSans.variable} h-full antialiased`}
     >
       <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange -950">
         <Navbar />

@@ -9,7 +9,7 @@ export default function MetricsSection() {
       <div className="mx-auto mt-20 mb-12 flex w-fit flex-col items-center gap-4 px-4 text-center">
         <h2 className="text-5xl font-medium tracking-tight leading-[1] text-zinc-800">
           Scale with{" "}
-          <span className="italic font-serif font-semibold text-[3.15rem] text-orange-600 text-shadow-xs text-shadow-orange-900/20">
+          <span className="italic font-medium text-orange-600">
             Confidence.
           </span>
         </h2>
