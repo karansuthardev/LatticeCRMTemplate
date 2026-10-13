@@ -5,7 +5,12 @@ import Image from "next/image";
 import DashboardMockup from "./components/dashboardMockup";
 import BrandLogoGrid from "./components/brandLogoGrid";
 
+import React, { useState } from "react";
+import HandDrawnUnderline from "./components/handDrawnUnderline";
+
 export default function HeroSection() {
+  const [underlineSeed, setUnderlineSeed] = useState<number | undefined>(undefined);
+
   return (
     <div className=" flex flex-col items-center w-full pt-32">
       <div className="flex flex-row items-center gap-1 rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-1.5 text-zinc-600 shadow-md hover:bg-zinc-100">
@@ -28,7 +33,11 @@ export default function HeroSection() {
 
       <h1 className="font-regular mt-14 text-6xl font-medium tracking-tighter">
         The{" "}
-        <span className="italic px-0.5 font-medium">
+        <span
+          className="relative inline-block cursor-pointer select-none"
+          onClick={() => setUnderlineSeed(Date.now())}
+          title="Click to generate another hand-drawn underline"
+        >
           Agentic Era
         </span>{" "}
         of CRMs
