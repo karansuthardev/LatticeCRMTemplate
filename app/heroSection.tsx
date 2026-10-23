@@ -4,12 +4,11 @@ import { cn } from "./utility/cn";
 import Image from "next/image";
 import DashboardMockup from "./components/dashboardMockup";
 import BrandLogoGrid from "./components/brandLogoGrid";
+import Button from "./components/button";
 
 import React, { useState } from "react";
-import HandDrawnUnderline from "./components/handDrawnUnderline";
 
 export default function HeroSection() {
-  const [underlineSeed, setUnderlineSeed] = useState<number | undefined>(undefined);
 
   return (
     <div className=" flex flex-col items-center w-full pt-32">
@@ -31,12 +30,10 @@ export default function HeroSection() {
         </svg>
       </div>
 
-      <h1 className="font-regular mt-14 text-6xl font-medium tracking-tighter">
+      <h1 className="font-regular mt-14 text-6xl font-medium text-zinc-700 tracking-tighter">
         The{" "}
         <span
-          className="relative inline-block cursor-pointer select-none"
-          onClick={() => setUnderlineSeed(Date.now())}
-          title="Click to generate another hand-drawn underline"
+          className="relative inline-block cursor-pointer select-none text-zinc-800"
         >
           Agentic Era
         </span>{" "}
@@ -49,12 +46,8 @@ export default function HeroSection() {
       </h2>
 
       <div className="mt-10 flex flex-row gap-4">
-        <button className="rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800 shadow-sm transition-colors duration-200 hover:bg-zinc-200">
-          <p className="font-medium text-shadow-xs">Sign in</p>
-        </button>
-        <button className="rounded-xl border border-orange-800 bg-orange-600 px-4 py-1.5 text-sm text-zinc-100 shadow-sm transition-colors duration-200 hover:bg-orange-700">
-          <p className="font-medium text-shadow-2xs">Try Demo</p>
-        </button>
+        <Button variant="secondary">Sign in</Button>
+        <Button variant="primary">Try a Demo</Button>
       </div>
 
       <div className="relative mt-24 border-y w-full h-180 overflow-hidden border-zinc-200">

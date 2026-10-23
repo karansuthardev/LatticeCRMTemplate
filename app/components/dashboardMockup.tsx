@@ -192,7 +192,7 @@ export default function DashboardMockup() {
                 {recentActivity.map((a) => (
                   <div key={a.name} className="flex items-center gap-2">
                     <div
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-normal text-white"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[8px] font-normal text-zinc-50"
                       style={{ background: a.color }}
                     >
                       {a.initials}
@@ -242,7 +242,7 @@ export default function DashboardMockup() {
                       <td className="py-1">
                         <div className="flex items-start gap-1">
                           <div
-                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[8px] font-normal text-white"
+                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[8px] font-normal text-zinc-50"
                             style={{ background: o.color }}
                           >
                             {o.initials}
@@ -390,7 +390,7 @@ export default function DashboardMockup() {
                   3 high-intent leads are ready for outreach. Would you like to
                   draft personalized messages?
                 </p>
-                <button className="mt-1.5 rounded-md bg-zinc-800 px-2 py-0.5 text-[8px] font-normal text-white">
+                <button className="mt-1.5 rounded-md bg-zinc-800 px-2 py-0.5 text-[8px] font-normal text-zinc-50">
                   Review
                 </button>
               </div>
@@ -761,7 +761,7 @@ function RevenueChart() {
         </svg>
         {activePoint !== null && activeValue !== null && (
           <motion.div
-            className="pointer-events-none absolute z-10 rounded bg-zinc-800 px-1.5 py-0.5 text-[8px] font-normal text-white shadow-sm"
+            className="pointer-events-none absolute z-10 rounded bg-zinc-800 px-1.5 py-0.5 text-[8px] font-normal text-zinc-50 shadow-sm"
             style={{
               left: `${((pad + activePoint * step) / w) * 100}%`,
               top: `${((pad + innerH - (activeValue / max) * innerH) / h) * 100}%`,

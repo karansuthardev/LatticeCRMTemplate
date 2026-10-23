@@ -16,3 +16,12 @@ body {
   color: var(--foreground);
   font-family: var(--font-general-sans), sans-serif;
 }
+
+@keyframes checkDraw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

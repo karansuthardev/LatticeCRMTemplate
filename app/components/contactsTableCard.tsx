@@ -128,7 +128,7 @@ type Phase = "idle" | "moving" | "clicking" | "filled";
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function ContactsTableCard() {
+export default function ContactsTableCard({ inView = true }: { inView?: boolean }) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [targetPos, setTargetPos] = useState({ x: 200, y: 105 });
   const cardRef = useRef<HTMLDivElement>(null);
@@ -155,8 +155,10 @@ export default function ContactsTableCard() {
     return () => window.removeEventListener("resize", updateTargetPos);
   }, []);
 
-  // Coordinate the timeline — loops forever
+  // Coordinate the timeline — starts only after inView is true, loops forever
   useEffect(() => {
+    if (!inView) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function runCycle() {
@@ -169,10 +171,16 @@ export default function ContactsTableCard() {
       timers.push(setTimeout(() => runCycle(), 5250));
     }
 
-    runCycle();
+    // Coordinated delay: illustration settles in 800ms, cycle kicks off immediately
+    const startTimer = setTimeout(() => {
+      runCycle();
+    }, 800);
 
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    return () => {
+      clearTimeout(startTimer);
+      timers.forEach(clearTimeout);
+    };
+  }, [inView]);
 
   const isOptimized = phase === "filled";
   const isClicking = phase === "clicking";

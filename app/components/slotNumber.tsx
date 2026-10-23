@@ -9,26 +9,31 @@ interface SlotNumberProps {
   integerDigits?: number; // Fixed number of integer digits before decimal (pads with '0')
   decimalDigits?: number; // Fixed number of decimal digits after decimal (pads with '0')
   suffix?: string; // Suffix to append
+  rowHeight?: number; // Custom row height in pixels (default: 22)
+  maskPadding?: number; // Custom vertical padding for the mask fade
+  maskFade?: number; // Custom fade distance in pixels
 }
 
 const DIGITS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-const ROW_HEIGHT = 22; // Explicit pixel height matching text-sm leading
+const DEFAULT_ROW_HEIGHT = 22; // Explicit pixel height matching text-sm leading
 
 // Memoized individual slot reel for a digit position
 const SlotReel = memo(function SlotReel({
   char,
   index,
+  rowHeight = DEFAULT_ROW_HEIGHT,
 }: {
   char: string;
   index: number;
+  rowHeight?: number;
 }) {
   const isDigit = DIGITS.includes(char);
 
   if (!isDigit) {
     return (
       <span
-        style={{ height: `${ROW_HEIGHT}px`, lineHeight: `${ROW_HEIGHT}px` }}
-        className="inline-flex items-center justify-center select-none text-zinc-800"
+        style={{ height: `${rowHeight}px`, lineHeight: `${rowHeight}px` }}
+        className="inline-flex items-center justify-center select-none text-inherit"
       >
         {char}
       </span>
@@ -39,19 +44,19 @@ const SlotReel = memo(function SlotReel({
 
   return (
     <span
-      style={{ height: `${ROW_HEIGHT}px` }}
-      className="relative inline-flex overflow-hidden justify-center"
+      style={{ height: `${rowHeight}px` }}
+      className="relative inline-flex overflow-visible justify-center"
     >
       {/* Invisible natural character placeholder to mirror natural font kerning & spacing */}
       <span
-        style={{ height: `${ROW_HEIGHT}px`, lineHeight: `${ROW_HEIGHT}px` }}
+        style={{ height: `${rowHeight}px`, lineHeight: `${rowHeight}px` }}
         className="invisible select-none opacity-0"
       >
         0
       </span>
       <motion.span
         className="absolute left-0 top-0 flex w-full flex-col"
-        animate={{ y: -num * ROW_HEIGHT }}
+        animate={{ y: -num * rowHeight }}
         transition={{
           duration: 0.42,
           delay: index * 0.025,
@@ -61,8 +66,8 @@ const SlotReel = memo(function SlotReel({
         {DIGITS.map((d) => (
           <span
             key={d}
-            style={{ height: `${ROW_HEIGHT}px`, lineHeight: `${ROW_HEIGHT}px` }}
-            className="flex w-full items-center justify-center text-center text-zinc-800"
+            style={{ height: `${rowHeight}px`, lineHeight: `${rowHeight}px` }}
+            className="flex w-full items-center justify-center text-center text-inherit"
           >
             {d}
           </span>
@@ -78,6 +83,9 @@ export default function SlotNumber({
   integerDigits,
   decimalDigits,
   suffix = "",
+  rowHeight = DEFAULT_ROW_HEIGHT,
+  maskPadding,
+  maskFade,
 }: SlotNumberProps) {
   let stringValue = String(value ?? "");
 
@@ -113,21 +121,29 @@ export default function SlotNumber({
   }
 
   const chars = stringValue.split("");
+  const pad = maskPadding !== undefined ? maskPadding : (rowHeight >= 36 ? 4 : 2);
+  const totalHeight = rowHeight + pad * 2;
+  const fade = maskFade !== undefined ? maskFade : (rowHeight >= 36 ? 10 : 5);
 
   return (
     <div
       style={{
-        height: `${ROW_HEIGHT}px`,
-        maskImage:
-          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
-        WebkitMaskImage:
-          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+        height: `${totalHeight}px`,
+        paddingTop: `${pad}px`,
+        paddingBottom: `${pad}px`,
+        maskImage: `linear-gradient(to bottom, transparent 0px, black ${fade}px, black calc(100% - ${fade}px), transparent 100%)`,
+        WebkitMaskImage: `linear-gradient(to bottom, transparent 0px, black ${fade}px, black calc(100% - ${fade}px), transparent 100%)`,
       }}
-      className={`relative inline-flex items-center tracking-normal select-none ${className}`}
+      className={`relative inline-flex items-center tracking-normal select-none overflow-hidden ${className}`}
     >
       <div className="flex items-center">
         {chars.map((char, index) => (
-          <SlotReel key={`pos-${index}`} char={char} index={index} />
+          <SlotReel
+            key={`pos-${index}`}
+            char={char}
+            index={index}
+            rowHeight={rowHeight}
+          />
         ))}
       </div>
     </div>

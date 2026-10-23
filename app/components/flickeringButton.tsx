@@ -43,7 +43,7 @@ export default function FaultyButton() {
         ease: easeOut,
       }}
       className={cn(
-        "absolute w-full h-full bg-white inset-0 z-10 rounded-full",
+        "absolute w-full h-full bg-zinc-50 inset-0 z-10 rounded-full",
       )}
     ></motion.div>
   </motion.div>);

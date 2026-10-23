@@ -552,14 +552,14 @@ export default function PipelineSection() {
   }, [updateConnectingLines]);
 
   return (
-    <section className="mb-32 w-full border-b border-zinc-200">
+    <section className="w-full border-b border-zinc-200">
       {/* ── Section Header & Canvas Controls ──────────────────────── */}
-      <div className="mx-auto mt-12 mb-10 flex w-fit flex-col gap-6 ">
+      <div className="mx-auto mb-10 flex w-fit flex-col gap-6 ">
         <div className="flex flex-col items-center justify-between gap-px">
-          <h2 className="text-5xl font-medium tracking-tight leading-[1] text-zinc-800">
-            Pipeline<span className="italic font-medium text-orange-600"> Intelligence.</span> 
+          <h2 className="text-5xl font-medium tracking-tight leading-[1] text-zinc-700">
+            Pipeline<span className="font-medium text-zinc-800"> Intelligence.</span> 
           </h2>
-          <p className="text-md mt-4 text-center font-medium tracking-wide text-zinc-500 ">
+          <p className="text-lg mt-4 text-center font-normal tracking-wide text-zinc-600 ">
             Improve sales conversions with an intelligent pipeline that 
             identifies bottlenecks and missed opportunities.
           </p>
@@ -840,7 +840,7 @@ export default function PipelineSection() {
                       {isTabSelected && (
                         <motion.div
                           layoutId="active-stage-tab"
-                          className="absolute inset-0 rounded-lg bg-white shadow-xs border border-zinc-200/80"
+                          className="absolute inset-0 rounded-lg bg-zinc-50 shadow-xs border border-zinc-200/80"
                           initial={{ scaleX: 1 }}
                           animate={{ scaleX: [1, 1.2, 1] }}
                           transition={{

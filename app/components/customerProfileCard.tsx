@@ -49,11 +49,13 @@ const allInteractions = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function CustomerProfileCard() {
+export default function CustomerProfileCard({ inView = true }: { inView?: boolean }) {
   // How many interactions are currently visible
   const [visibleCount, setVisibleCount] = useState(1);
 
   useEffect(() => {
+    if (!inView) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function runCycle() {
@@ -75,9 +77,15 @@ export default function CustomerProfileCard() {
       timers.push(setTimeout(() => runCycle(), holdMs));
     }
 
-    runCycle();
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    const startTimer = setTimeout(() => {
+      runCycle();
+    }, 800);
+
+    return () => {
+      clearTimeout(startTimer);
+      timers.forEach(clearTimeout);
+    };
+  }, [inView]);
 
   const visibleItems = allInteractions.slice(0, visibleCount).reverse();
 

@@ -73,7 +73,7 @@ const responseLineVariants = {
 
 type ChatPhase = "typing" | "thinking" | "collecting" | "answering" | "done";
 
-export default function AgentChatCard() {
+export default function AgentChatCard({ inView = true }: { inView?: boolean }) {
   const [phase, setPhase] = useState<ChatPhase>("typing");
   const [hasUserSent, setHasUserSent] = useState(false);
   const [sentPrompt, setSentPrompt] = useState(PROMPT_TEXT);
@@ -97,8 +97,10 @@ export default function AgentChatCard() {
     }
   }, [phase, isContextExpanded, hasUserSent]);
 
-  // Sequenced animation loop
+  // Sequenced animation loop — starts only after inView is true, loops forever
   useEffect(() => {
+    if (!inView) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function startCycle() {
@@ -168,9 +170,15 @@ export default function AgentChatCard() {
       );
     }
 
-    startCycle();
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    const startTimer = setTimeout(() => {
+      startCycle();
+    }, 800);
+
+    return () => {
+      clearTimeout(startTimer);
+      timers.forEach(clearTimeout);
+    };
+  }, [inView]);
 
   const handleRedo = () => {
     setHasUserSent(true);

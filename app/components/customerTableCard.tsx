@@ -41,10 +41,12 @@ const customerData: CustomerRecord[] = [
 
 type Phase = "idle" | "moving" | "hovering" | "leaving";
 
-export default function CustomerTableCard() {
+export default function CustomerTableCard({ inView = true }: { inView?: boolean }) {
   const [phase, setPhase] = useState<Phase>("idle");
 
   useEffect(() => {
+    if (!inView) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
 
     function runCycle() {
@@ -55,10 +57,15 @@ export default function CustomerTableCard() {
       timers.push(setTimeout(() => runCycle(), 5500));
     }
 
-    runCycle();
+    const startTimer = setTimeout(() => {
+      runCycle();
+    }, 800);
 
-    return () => timers.forEach(clearTimeout);
-  }, []);
+    return () => {
+      clearTimeout(startTimer);
+      timers.forEach(clearTimeout);
+    };
+  }, [inView]);
 
   const isHovered = phase === "hovering";
 

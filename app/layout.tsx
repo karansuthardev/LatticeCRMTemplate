@@ -3,6 +3,7 @@ import "./globals.css";
 
 import localFont from "next/font/local";
 import Navbar from "./components/navbar";
+import Footer from "./footer";
 
 const generalSans = localFont({
   src: [
@@ -85,9 +86,10 @@ export default function RootLayout({
       lang="en"
       className={`${generalSans.className} ${generalSans.variable} h-full antialiased`}
     >
-      <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange -950">
+      <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange-950">
         <Navbar />
         <div className="flex flex-1 flex-col w-full">{children}</div>
+        <Footer />
       </body>
     </html>
   );

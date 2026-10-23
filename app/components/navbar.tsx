@@ -2,6 +2,7 @@
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import Link from "next/link";
+import Button from "./button";
 
 export default function Navbar() {
   const [companyOpen, setCompanyOpen] = useState(false);
@@ -78,12 +79,8 @@ export default function Navbar() {
         </div>
 
         <div className="flex flex-row gap-4">
-          <button className="text-sm rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-zinc-800 transition-colors duration-200 hover:bg-zinc-200">
-            <p className="font-medium text-shadow-xs">Sign in</p>
-          </button>
-          <button className="text-sm rounded-xl border border-orange-800 bg-orange-600 px-4 py-1.5 text-zinc-100 shadow-xs transition-colors duration-200 hover:bg-orange-700">
-            <p className="font-medium text-shadow-2xs">Try Demo</p>
-          </button>
+          <Button variant="secondary">Sign in</Button>
+          <Button variant="primary">Try a Demo</Button>
         </div>
       </div>
     </div>

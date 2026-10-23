@@ -1,7 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
+import { motion, useInView, type Variants } from "motion/react";
+import { cn } from "./utility/cn";
 import ContactsTableCard from "./components/contactsTableCard";
 import CustomerTableCard from "./components/customerTableCard";
 import CustomerProfileCard from "./components/customerProfileCard";
@@ -16,22 +18,99 @@ export interface FeatureItem {
   cardPosition?: "left" | "right";
 }
 
+// ── Motion Variants (shadcn/ui animation standards) ───────────────────────────
+
+const EASE_CURVE = [0.22, 1, 0.36, 1] as const;
+
+const textContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
+const textItemVariants: Variants = {
+  hidden: (x: number) => ({
+    opacity: 0,
+    x,
+    filter: "blur(6px)",
+  }),
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      ease: EASE_CURVE,
+    },
+  },
+};
+
+const cardMotionVariants: Variants = {
+  hidden: (x: number) => ({
+    opacity: 0,
+    x,
+    filter: "blur(6px)",
+  }),
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.8,
+      delay: 0.15, // Staggered: illustration arrives right after the title & subtitle
+      ease: EASE_CURVE,
+    },
+  },
+};
+
+export interface FeatureRowProps extends Omit<FeatureItem, "id"> {
+  className?: string;
+}
+
 export function FeatureRow({
   title,
   description,
   card,
   cardWidth = "w-150",
   cardPosition = "right",
-}: Omit<FeatureItem, "id">) {
+  className,
+}: FeatureRowProps) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(rowRef, { amount: 0.75, once: true });
+
   const isCardLeft = cardPosition === "left";
 
+  // Subtle 10px translation:
+  // Illustration on right: elements come from center (text: +10, card: -10)
+  // Illustration on left: elements come to center from outside (card: -10, text: +10)
+  const textInitialX = 10;
+  const cardInitialX = -10;
+
   const textBlock = (
-    <div className="flex h-full w-full flex-col items-start justify-center gap-4 p-8 pb-8">
-      <p className="text-4xl font-medium text-zinc-800">{title}</p>
-      <p className="text-md font-normal tracking-wide text-pretty text-zinc-600">
+    <motion.div
+      variants={textContainerVariants}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      className="flex h-full w-full flex-col items-start justify-center gap-4 p-8 pb-8"
+    >
+      <motion.p
+        custom={textInitialX}
+        variants={textItemVariants}
+        className="text-4xl font-medium text-zinc-800"
+      >
+        {title}
+      </motion.p>
+      <motion.p
+        custom={textInitialX}
+        variants={textItemVariants}
+        className="text-md font-normal tracking-wide text-pretty text-zinc-600"
+      >
         {description}
-      </p>
-    </div>
+      </motion.p>
+    </motion.div>
   );
 
   const cardBlock = (
@@ -42,16 +121,31 @@ export function FeatureRow({
         fill
         className="absolute inset-0 h-full w-full shrink-0 object-cover"
       />
-      <div
+      <motion.div
+        custom={cardInitialX}
+        variants={cardMotionVariants}
+        initial="hidden"
+        animate={isInView ? "visible" : "hidden"}
         className={`absolute inset-0 m-auto flex h-110 ${cardWidth} items-center`}
       >
-        {card}
-      </div>
+        {React.isValidElement(card)
+          ? React.cloneElement(
+              card as React.ReactElement<{ inView?: boolean }>,
+              { inView: isInView },
+            )
+          : card}
+      </motion.div>
     </div>
   );
 
   return (
-    <div className="grid h-120 w-full grid-cols-2 grid-rows-1 divide-x divide-zinc-200 overflow-hidden">
+    <div
+      ref={rowRef}
+      className={cn(
+        "grid h-120 w-full grid-cols-2 grid-rows-1 divide-x divide-zinc-200 overflow-hidden",
+        className,
+      )}
+    >
       {isCardLeft ? (
         <>
           {cardBlock}
@@ -73,7 +167,7 @@ const features: FeatureItem[] = [
     title: (
       <>
         Consistent data
-        <span className="text-zinc-600"> across your workspace,</span> always.
+        <span className="text-zinc-700"> across your workspace,</span> always.
       </>
     ),
     description:
@@ -87,8 +181,8 @@ const features: FeatureItem[] = [
     title: (
       <>
         Customer relations{" "}
-        <span className="inline-block text-zinc-600"> strengthen </span>
-        <br /> <span className="inline-block text-zinc-600">with better </span>{" "}
+        <span className="inline-block text-zinc-700"> strengthen </span>
+        <br /> <span className="inline-block text-zinc-700">with better </span>{" "}
         context.
       </>
     ),
@@ -103,8 +197,8 @@ const features: FeatureItem[] = [
     title: (
       <>
         Informed decisions{" "}
-        <span className="inline-block text-zinc-600"> are </span>
-        <br /> <span className="inline-block text-zinc-600">shaped by </span>{" "}
+        <span className="inline-block text-zinc-700"> are </span>
+        <br /> <span className="inline-block text-zinc-700">shaped by </span>{" "}
         reliable data.
       </>
     ),
@@ -119,8 +213,8 @@ const features: FeatureItem[] = [
     title: (
       <>
         Decision clarity{" "}
-        <span className="inline-block text-zinc-600"> informed by </span>
-        <br /> <span className="inline-block text-zinc-600">intelligent </span>{" "}
+        <span className="inline-block text-zinc-700"> informed by </span>
+        <br /> <span className="inline-block text-zinc-700">intelligent </span>{" "}
         insights.
       </>
     ),
@@ -134,10 +228,11 @@ const features: FeatureItem[] = [
 
 export default function FeaturesSection() {
   return (
-    <div className="mt-48 mb-24 flex w-full flex-col items-start justify-start">
-      <div className="mb-6 flex w-full flex-col items-center gap-2 px-6 py-4">
-        <p className="text-5xl font-medium text-zinc-800">
-          Grow with less to manage.
+    <div className=" flex w-full flex-col items-start justify-start">
+      <div className="mb-10 flex w-full flex-col items-center gap-2 mx-auto ">
+        <p className="text-5xl font-medium text-zinc-700">
+          Grow with {" "}
+          <span className="text-zinc-800">less to manage.</span>
         </p>
         <p className="text-md text-lg font-normal text-zinc-500">
           AI handles the busywork across your CRM, so your team can focus on
