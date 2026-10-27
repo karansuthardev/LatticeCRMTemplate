@@ -2,7 +2,8 @@
 
 import { cn } from "./utility/cn";
 import Image from "next/image";
-import DashboardMockup from "./components/dashboardMockup";
+import DashboardV2 from "./components/dashboard_v2";
+// import DashboardMockup from "./components/dashboardMockup";
 import BrandLogoGrid from "./components/brandLogoGrid";
 import Button from "./components/button";
 
@@ -60,8 +61,10 @@ export default function HeroSection() {
                   fill
                 />
 
-        <div className="absolute inset-0 z-50 m-auto flex h-fit w-fit flex-col justify-center rounded-2xl mx-12 shadow-2xl">
-          <DashboardMockup />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 flex h-fit w-fit flex-col justify-center rounded-2xl shadow-2xl">
+          {/* Old hero dashboard hidden (preserved in app/components/dashboardMockup.tsx & accessible at /old-dashboard) */}
+          {/* <DashboardMockup /> */}
+          <DashboardV2 />
         </div>
       </div>
       <BrandLogoGrid />

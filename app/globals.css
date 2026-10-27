@@ -3,6 +3,18 @@
 :root {
   --background: var(--color-zinc-100);
   --foreground: var(--color-zinc-800);
+
+  /* Fibonacci Design Sizing System */
+  --size-4: 4px;
+  --size-6: 6px;
+  --size-10: 10px;
+  --size-16: 16px;
+  --size-26: 26px;
+  --size-42: 42px;
+  --size-68: 68px;
+  --size-110: 110px;
+  --size-178: 178px;
+  --size-288: 288px;
 }
 
 @theme inline {
