@@ -145,33 +145,35 @@ export default function TestimonialSection() {
 
   // Auto-scroll effect: advances to next testimonial every 6 seconds
   useEffect(() => {
-    const timer = setTimeout(() => {
-      handleNext();
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % TESTIMONIALS.length);
+      setTimerKey((k) => k + 1);
     }, AUTO_SCROLL_DURATION);
 
-    return () => clearTimeout(timer);
-  }, [currentIndex, timerKey]);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <section className="w-full border-b border-zinc-200 bg-zinc-100">
       {/* ── Section Header ────────────────────────────────────────────── */}
       <div className="mx-auto mb-12 flex w-fit flex-col items-center gap-4 text-center">
-        <h2 className="text-5xl font-medium tracking-tight text-zinc-700 text-pretty">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-zinc-700 text-pretty">
           Real impact on <span className="text-zinc-800">real businesses.</span>
         </h2>
       </div>
 
       <div className="relative w-full border-t border-zinc-200">
-        <div className="grid w-full grid-cols-1 divide-y divide-zinc-200 lg:h-[440px] lg:grid-cols-12 lg:divide-y-0 lg:divide-x">
+        <div className="grid w-full grid-cols-1 sm:h-[440px] lg:h-[440px] lg:grid-cols-12 lg:divide-x lg:divide-zinc-200">
           
           {/* ── First Column: Image (B&W default, color on hover, smooth cross-fade) ─── */}
-          <div className="group/img relative flex h-[320px] sm:h-[380px] lg:h-full w-full items-center justify-center overflow-hidden bg-zinc-200 lg:col-span-3 cursor-pointer">
+          <div className="group/img relative hidden lg:flex h-[320px] sm:h-[380px] lg:h-full w-full items-center justify-center overflow-hidden bg-zinc-200 lg:col-span-3 cursor-pointer">
             <AnimatePresence initial={false}>
               <motion.div
                 key={current.id}
-                initial={{ opacity: 0, filter: "blur(6px)" }}
-                animate={{ opacity: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, filter: "blur(6px)" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.35, ease: "easeInOut" }}
                 className="absolute inset-0 h-full w-full"
               >
@@ -188,36 +190,125 @@ export default function TestimonialSection() {
           </div>
 
           {/* ── Second Column: Testimonial & Person Info ────────────── */}
-          <div className="flex h-full flex-col justify-between p-8 sm:p-10 lg:col-span-6 overflow-hidden">
-            <AnimatePresence mode="wait">
+          <div className="flex h-full flex-col justify-between p-8 sm:p-0 sm:pt-10 lg:p-10 lg:col-span-6 overflow-hidden">
+            <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={current.id}
-                initial={{ opacity: 0, filter: "blur(4px)" }}
-                animate={{ opacity: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0, filter: "blur(4px)" }}
-                transition={{ duration: 0.25, delay: 0.06, ease: "easeOut" }}
-                className="flex h-full flex-col justify-between gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="flex h-full flex-col justify-between gap-6 sm:gap-0 lg:gap-6"
               >
                 {/* Quote */}
-                <blockquote className="text-lg sm:text-xl font-normal leading-relaxed text-zinc-800 text-pretty">
+                <blockquote className="min-h-[190px] sm:min-h-0 sm:flex-1 sm:px-10 sm:pb-6 lg:p-0 text-lg sm:text-xl font-normal leading-relaxed text-zinc-800 text-pretty line-clamp-8 sm:line-clamp-none">
                   “{current.quote}”
                 </blockquote>
 
-                {/* Author Info (No divider) */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-base font-medium text-zinc-900">
-                    {current.name}
-                  </span>
-                  <span className="text-sm font-normal text-zinc-500">
-                    {current.role}, {current.company}
-                  </span>
+                {/* Mobile Metrics Row */}
+                <div className="flex divide-x divide-zinc-200 -mx-8 sm:mx-0 border-y sm:border-b-0 border-zinc-200 lg:hidden">
+                  <div className="flex flex-1 flex-col items-center md:items-start justify-center px-8 sm:px-10 py-5">
+                    <span className="text-xs font-normal text-zinc-500">
+                      Conversion Rate
+                    </span>
+                    <div className="flex flex-col items-center gap-1 mt-2 md:flex-row md:items-baseline md:justify-start md:gap-3">
+                      <span className="text-[clamp(1.25rem,7vw,1.875rem)] font-medium tracking-tight text-zinc-800">
+                        {current.conversionRate.value}
+                      </span>
+                      <div className="flex items-center gap-1 text-emerald-600">
+                        <TrendUpIcon width={16} height={16} strokeWidth={1.75} className="shrink-0" />
+                        <span className="text-sm font-medium">{current.conversionRate.change}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-1 flex-col items-center md:items-start justify-center px-5 sm:px-10 py-5">
+                    <span className="text-xs font-normal text-zinc-500">
+                      Avg. Sales Cycle
+                    </span>
+                    <div className="flex flex-col items-center gap-1 mt-2 md:flex-row md:items-baseline md:justify-start md:gap-3">
+                      <span className="text-[clamp(1.25rem,7vw,1.875rem)] font-medium tracking-tight text-zinc-800">
+                        {current.salesCycle.value.replace(" days", "D")}
+                      </span>
+                      <div className="flex items-center gap-1 text-emerald-600">
+                        <TrendDownIcon width={16} height={16} strokeWidth={1.75} className="shrink-0" />
+                        <span className="text-sm font-medium">{current.salesCycle.change}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Author Info & Tablet Arrow Controls Bar */}
+                <div className="flex items-stretch justify-between sm:border-t sm:border-zinc-200 lg:border-t-0">
+                  <div className="flex items-center gap-3 sm:px-10 sm:py-5 lg:p-0">
+                    {/* Small square avatar - mobile & tablet */}
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded lg:hidden">
+                      <Image
+                        src={current.image}
+                        alt={current.name}
+                        fill
+                        className="object-cover object-center"
+                        sizes="44px"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-base font-medium text-zinc-900">
+                        {current.name}
+                      </span>
+                      <span className="text-sm font-normal text-zinc-500">
+                        {current.role}, {current.company}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Tablet Arrow Controls - Square buttons filling full height */}
+                  <div className="hidden sm:grid lg:hidden grid-cols-2 divide-x divide-zinc-200 border-l border-zinc-200 self-stretch shrink-0">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      aria-label="Previous testimonial"
+                      className="group flex aspect-square h-full items-center justify-center bg-zinc-100 transition-colors hover:bg-zinc-200/70 active:bg-zinc-200 cursor-pointer"
+                    >
+                      <ArrowLeftIcon
+                        width={22}
+                        height={22}
+                        strokeWidth={1.5}
+                        className="text-zinc-600 transition-transform duration-100 ease-out group-hover:-translate-x-0.5 group-hover:text-zinc-900 active:scale-95"
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      aria-label="Next testimonial"
+                      className="group relative flex aspect-square h-full items-center justify-center overflow-hidden bg-zinc-100 transition-colors hover:bg-zinc-200/70 active:bg-zinc-200 cursor-pointer"
+                    >
+                      <ArrowRightIcon
+                        width={22}
+                        height={22}
+                        strokeWidth={1.5}
+                        className="text-zinc-600 transition-transform duration-100 ease-out group-hover:translate-x-0.5 group-hover:text-zinc-900 active:scale-95"
+                      />
+                      {/* Tablet autoscroll progress line */}
+                      <div className="pointer-events-none absolute bottom-0 inset-x-0 h-1 bg-transparent z-10">
+                        <motion.div
+                          key={`tablet-timer-${currentIndex}-${timerKey}`}
+                          initial={{ width: "0%" }}
+                          animate={{ width: "100%" }}
+                          transition={{
+                            duration: AUTO_SCROLL_DURATION / 1000,
+                            ease: "linear",
+                          }}
+                          className="h-full bg-orange-500"
+                        />
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
           </div>
 
           {/* ── Third Column: Three Rows (2 Metrics + Controls) ──────── */}
-          <div className="grid h-full grid-rows-3 divide-y divide-zinc-200 lg:col-span-3">
+          <div className="hidden lg:grid h-full grid-rows-3 divide-y divide-zinc-200 lg:col-span-3">
             
             {/* Row 1: Conversion Rate Metric */}
             <div className="flex flex-col justify-center p-6 bg-zinc-100">
@@ -225,13 +316,13 @@ export default function TestimonialSection() {
                 Conversion Rate
               </span>
 
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`conv-${current.id}`}
-                  initial={{ opacity: 0, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(4px)" }}
-                  transition={{ duration: 0.25, delay: 0.12, ease: "easeOut" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="flex items-baseline justify-between gap-3 mt-4"
                 >
                   <span className="text-5xl font-medium tracking-tight text-zinc-800">
@@ -255,13 +346,13 @@ export default function TestimonialSection() {
                 Avg. Sales Cycle
               </span>
 
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`cycle-${current.id}`}
-                  initial={{ opacity: 0, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(4px)" }}
-                  transition={{ duration: 0.25, delay: 0.18, ease: "easeOut" }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="flex items-baseline justify-between gap-3 mt-4"
                 >
                   <span className="text-5xl font-medium tracking-tight text-zinc-800">
@@ -324,6 +415,20 @@ export default function TestimonialSection() {
               </button>
             </div>
 
+          </div>
+
+          {/* Auto-scroll progress line spanning the bottom of the whole section on mobile only */}
+          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-1 bg-zinc-200 sm:hidden overflow-hidden z-10">
+            <motion.div
+              key={`progress-full-${currentIndex}-${timerKey}`}
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{
+                duration: AUTO_SCROLL_DURATION / 1000,
+                ease: "linear",
+              }}
+              className="h-full bg-orange-500"
+            />
           </div>
 
         </div>
