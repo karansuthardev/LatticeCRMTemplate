@@ -1,10 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
+import { cva } from "class-variance-authority";
+import { cn } from "../utility/cn";
+import { Badge } from "./ui/badge";
+
+const navItemVariants = cva(
+  "relative flex w-full cursor-pointer items-center justify-between select-none text-left border transition-colors duration-150 focus:outline-none focus-visible:ring-1.5 focus-visible:ring-zinc-400 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "border-transparent text-zinc-500 hover:text-zinc-800",
+        active: "border-zinc-200 bg-zinc-50 text-zinc-800 font-normal",
+        parentActive: "border-transparent text-zinc-800 font-normal",
+      },
+      size: {
+        default: "rounded-lg px-2 py-1.5 text-xs font-normal [&_svg]:size-4",
+        sub: "rounded-md px-2 py-1 text-[11px] font-normal [&_svg]:size-3.5",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+
+function HoverIndicator({ rounded = "rounded-lg" }: { rounded?: string }) {
+  return (
+    <motion.div
+      layoutId="navbar-hover-indicator"
+      className={cn("absolute inset-0 bg-zinc-200 opacity-70 pointer-events-none", rounded)}
+      initial={false}
+      animate={{ opacity: 0.7 }}
+      transition={{
+        type: "spring",
+        bounce: 0.15,
+        duration: 0.2,
+        opacity: { duration: 0 },
+      }}
+      style={{ opacity: 0.7 }}
+    />
+  );
+}
+
+type NavItem = {
+  id: string;
+  label: string;
+  icon: React.ComponentType;
+  badge?: number | string;
+};
+
+const PRIMARY_NAV: NavItem[] = [
+  { id: "home", label: "Home", icon: HomeIcon },
+  { id: "inbox", label: "Inbox", icon: InboxIcon, badge: 3 },
+  { id: "tasks", label: "Tasks", icon: TaskIcon, badge: 4 },
+  { id: "meetings", label: "Meetings", icon: MeetingsIcon },
+  { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
+  { id: "notes", label: "Notes", icon: NotesIcon },
+];
 
 export default function DashboardMockup() {
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
+  const [activeNav, setActiveNav] = useState<string>("Dashboard");
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [isRecordsOpen, setIsRecordsOpen] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const toggleTask = (taskName: string) => {
     setCompletedTasks((currentTasks) =>
@@ -14,10 +76,27 @@ export default function DashboardMockup() {
     );
   };
 
+  const recordItems = [
+    { id: "people", label: "People", icon: PersonIcon },
+    { id: "companies", label: "Companies", icon: BuildingIcon },
+    { id: "opportunities", label: "Opportunities", icon: OpportunityIcon },
+    { id: "all-tables", label: "All Tables", icon: TableIcon },
+  ];
+
+  const isChildRecordActive = ["People", "Companies", "Opportunities", "All Tables"].includes(activeNav);
+  const isRecordsActive = activeNav === "Records" || (!isRecordsOpen && isChildRecordActive);
+
   return (
     <div className="flex h-full w-full rounded-2xl border border-zinc-200 bg-zinc-100 overflow-hidden text-zinc-800">
-      <aside className="flex w-50 shrink-0 flex-col gap-1 bg-zinc-100 px-2 py-3 relative-10">
-        <div className="mb-1 flex flex-row items-center justify-between gap-1.5 px-2 py-1">
+      <aside
+        className="flex w-52 shrink-0 flex-col bg-zinc-100 px-2 py-3 relative z-10 select-none"
+        onMouseLeave={() => setHoveredNav(null)}
+      >
+        {/* Lattice logo & collapse */}
+        <div
+          className="mb-2 flex flex-row items-center justify-between gap-1.5 px-2 py-1"
+          onMouseEnter={() => setHoveredNav(null)}
+        >
           <div className="flex flex-row items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -35,53 +114,175 @@ export default function DashboardMockup() {
             </svg>
             <span className="text-sm font-black text-zinc-900">Lattice</span>
           </div>
-          <div className="rounded-lg p-0.5 text-zinc-500 hover:text-zinc-600">
+          <div className="rounded-lg p-0.5 text-zinc-500 hover:text-zinc-600 cursor-pointer">
             <PanelLeftCloseIcon />
           </div>
         </div>
 
-        {/* Nav items */}
-        {[
-          { label: "Overview", active: true, icon: HomeIcon },
-          { label: "Companies", active: false, icon: BuildingIcon },
-          { label: "People", active: false, icon: PersonIcon },
-          { label: "Opportunities", active: false, icon: OpportunityIcon },
-          { label: "Tasks", active: false, icon: TaskIcon },
-          { label: "Notes", active: false, icon: NotesIcon },
-          { label: "Workflows", active: false, icon: WorkflowIcon },
-          { label: "AI / Agents", active: false, icon: AIIcon },
-        ].map(({ label, active, icon: Icon }) => (
-          <div
-            key={label}
-            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-normal ${
-              active
-                ? "border border-zinc-200 bg-zinc-50 text-zinc-800"
-                : "text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
-            }`}
-          >
-            <Icon />
-            {label}
+        {/* 1. Search — Fixed at the top, always accessible */}
+        <div
+          className="mb-2 px-0.5"
+          onMouseEnter={() => setHoveredNav(null)}
+        >
+          <div className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-50/80 px-2 py-1.5 text-xs text-zinc-500 shadow-2xs hover:border-zinc-300">
+            <SearchIcon />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-transparent text-xs text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
+            />
+            <Badge variant="kbd">⌘K</Badge>
           </div>
-        ))}
+        </div>
 
-        {/* Spacer + Settings */}
-        <div className="mt-auto">
-          <div className="flex cursor-pointer items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-xs font-normal text-zinc-600 hover:bg-zinc-200 hover:text-zinc-700">
-            <div className="flex flex-row gap-2">
-              <SettingsIcon />
-              Settings
-            </div>
-            <ArrowRightIcon />
+        {/* Scrollable nav section */}
+        <div className="flex flex-1 flex-col overflow-y-auto scrollbar-none pr-0.5">
+          {/* 2-7. Primary Navigation Items */}
+          <div className="flex flex-col gap-1">
+            {PRIMARY_NAV.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeNav === item.label;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onMouseEnter={() => setHoveredNav(item.id)}
+                  onClick={() => setActiveNav(item.label)}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    navItemVariants({
+                      variant: isActive ? "active" : "default",
+                      size: "default",
+                    })
+                  )}
+                >
+                  {hoveredNav === item.id && <HoverIndicator />}
+                  <div className="relative z-10 flex items-center gap-2 min-w-0">
+                    <Icon />
+                    <span className="truncate">{item.label}</span>
+                  </div>
+                  {item.badge !== undefined && (
+                    <Badge
+                      variant={isActive ? "active" : "default"}
+                      className="relative z-10"
+                    >
+                      {item.badge}
+                    </Badge>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          {/* 8. Records — Collapsible section containing People, Companies, Opportunities, All Tables */}
+          <div className="mt-1 flex flex-col">
+            <button
+              type="button"
+              onMouseEnter={() => setHoveredNav("records")}
+              onClick={() => {
+                setIsRecordsOpen((open) => !open);
+                setActiveNav("Records");
+                setHoveredNav("records");
+              }}
+              aria-expanded={isRecordsOpen}
+              className={cn(
+                navItemVariants({
+                  variant: isRecordsActive
+                    ? "active"
+                    : isChildRecordActive
+                      ? "parentActive"
+                      : "default",
+                  size: "default",
+                })
+              )}
+            >
+              {hoveredNav === "records" && <HoverIndicator />}
+              <div className="relative z-10 flex items-center gap-2">
+                <RecordsIcon />
+                <span>Records</span>
+              </div>
+              <motion.div
+                animate={{ rotate: isRecordsOpen ? 0 : -90 }}
+                transition={{ duration: 0.15 }}
+                className="relative z-10 text-zinc-400"
+              >
+                <ChevronDownIcon />
+              </motion.div>
+            </button>
+
+            <AnimatePresence initial={false}>
+              {isRecordsOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="ml-3.5 mt-0.5 flex flex-col gap-0.5 border-l border-zinc-200 pl-2.5 overflow-hidden"
+                >
+                  {recordItems.map(({ id, label, icon: SubIcon }) => {
+                    const isSubActive = activeNav === label;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onMouseEnter={() => setHoveredNav(id)}
+                        onClick={() => setActiveNav(label)}
+                        aria-current={isSubActive ? "page" : undefined}
+                        className={cn(
+                          navItemVariants({
+                            variant: isSubActive ? "active" : "default",
+                            size: "sub",
+                          })
+                        )}
+                      >
+                        {hoveredNav === id && <HoverIndicator rounded="rounded-md" />}
+                        <div className="relative z-10 flex items-center gap-2 min-w-0">
+                          <SubIcon />
+                          <span className="truncate">{label}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Spacer + Settings (Pinned at the bottom) */}
+        <div className="mt-auto pt-2">
+          <button
+            type="button"
+            onMouseEnter={() => setHoveredNav("settings")}
+            onClick={() => setActiveNav("Settings")}
+            aria-current={activeNav === "Settings" ? "page" : undefined}
+            className={cn(
+              navItemVariants({
+                variant: activeNav === "Settings" ? "active" : "default",
+                size: "default",
+              })
+            )}
+          >
+            {hoveredNav === "settings" && <HoverIndicator />}
+            <div className="relative z-10 flex flex-row items-center gap-2">
+              <SettingsIcon />
+              <span>Settings</span>
+            </div>
+            <div className="relative z-10 text-zinc-500">
+              <ArrowRightIcon />
+            </div>
+          </button>
         </div>
       </aside>
 
-      {/* ── Main content ──────────────────────────────── */}
+      {/* -- Main content -- */}
       <div className="relative z-20 flex flex-1 flex-col ">
         {/* Top bar */}
         <header className="flex h-10 shrink-0 items-center justify-between bg-zinc-100 px-5">
           <div>
-            <h1 className="text-sm font-medium text-zinc-900">Overview</h1>
+            <h1 className="text-sm font-medium text-zinc-900">{activeNav}</h1>
           </div>
           <div className="flex items-baseline gap-2 text-[8px] text-zinc-600">
             <span>Tue, Sep 29, 2026</span>
@@ -90,14 +291,14 @@ export default function DashboardMockup() {
 
         {/* Scrollable body */}
         <div className="mr-1 mb-1 flex-1 overflow-y-auto rounded-2xl shadow-[0px_0px_4px_0.5px_var(--color-zinc-200)] bg-zinc-50 p-2">
-          {/* ── KPI cards ── */}
+          {/* -- KPI cards -- */}
           <div className="mb-2 grid grid-cols-5 gap-2">
             {kpiCards.map((card) => (
               <KpiCard key={card.label} {...card} />
             ))}
           </div>
 
-          {/* ── Row 2: Pipeline + Revenue + Recent activity ── */}
+          {/* -- Row 2: Pipeline + Revenue + Recent activity -- */}
           <div className="mb-2 grid grid-cols-3 gap-2">
             {/* Pipeline */}
             <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3">
@@ -212,7 +413,7 @@ export default function DashboardMockup() {
             </div>
           </div>
 
-          {/* ── Row 3: Top opportunities + Upcoming tasks + AI panel ── */}
+          {/* -- Row 3: Top opportunities + Upcoming tasks + AI panel -- */}
           <div className="grid grid-cols-3 gap-2">
             {/* Top opportunities */}
 
@@ -675,7 +876,7 @@ const tasks = [
   },
 ];
 
-// ── Mini SVG revenue chart ────────────────────────────────────────────────────
+// -- Mini SVG revenue chart ----------------------------------------------------
 
 function RevenueChart() {
   const points = [20, 35, 25, 45, 55, 70, 90];
@@ -786,7 +987,7 @@ function RevenueChart() {
   );
 }
 
-// ── Sidebar icons (tiny inline SVGs) ─────────────────────────────────────────
+// -- Sidebar icons (tiny inline SVGs) -----------------------------------------
 
 function HomeIcon() {
   return (
@@ -1092,6 +1293,133 @@ function ChevronDownIcon() {
       strokeLinejoin="round"
     >
       <path d="M18 9.00005C18 9.00005 13.5811 15 12 15C10.4188 15 6 9 6 9"></path>
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="13"
+      height="13"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20L16 16" />
+    </svg>
+  );
+}
+
+function InboxIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </svg>
+  );
+}
+
+function MeetingsIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function DashboardIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  );
+}
+
+function RecordsIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  );
+}
+
+function TableIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      color="currentColor"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M3 15h18" />
+      <path d="M9 9v12" />
     </svg>
   );
 }
