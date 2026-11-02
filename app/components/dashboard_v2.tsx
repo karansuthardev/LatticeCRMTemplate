@@ -24,6 +24,7 @@ import {
   PanelLeftCloseIcon,
   LatticeLogoIcon,
 } from "../icons";
+import DashboardHomeView from "./dashboardHomeView";
 
 interface DashboardV2Props {
   className?: string;
@@ -235,6 +236,7 @@ export default function DashboardV2({ className }: DashboardV2Props) {
             </button>
           </div>
 
+          {/* Sidebar Chat / AI Prompt Controls */}
           {/* Search bar */}
           <div className="mb-2" onMouseEnter={() => setHoveredItem(null)}>
             <div className="group flex items-center gap-2 rounded-lg border border-zinc-200 bg-transparent px-2.5 py-1.5 text-xs text-zinc-600 transition-colors duration-200 focus-within:bg-zinc-50">
@@ -452,9 +454,27 @@ export default function DashboardV2({ className }: DashboardV2Props) {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden p-2">
-          <div className="h-full w-full rounded-xl bg-white/50 border border-zinc-200/60 p-4">
-            {/* Ready for the specific view content */}
+        <main className="flex-1 overflow-hidden p-1.5">
+          <div className="h-full w-full rounded-xl bg-white/70 border border-zinc-200/60 overflow-hidden shadow-2xs">
+            {activeItem === "home" ? (
+              <DashboardHomeView />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center">
+                <span className="text-xs font-medium capitalize text-zinc-700">
+                  {activeItem.replace("-", " ")}
+                </span>
+                <p className="mt-1 text-[11px] text-zinc-400">
+                  View and manage your {activeItem.replace("-", " ")} records.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveItem("home")}
+                  className="mt-3 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 shadow-2xs transition-colors cursor-pointer"
+                >
+                  Return to Home
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>

@@ -169,7 +169,7 @@ function LogoVeyra() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -219,7 +219,7 @@ function LogoKintaro() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -259,7 +259,7 @@ function LogoNuvora() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -300,7 +300,7 @@ function LogoTandemly() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -342,7 +342,7 @@ function LogoObliq() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -395,7 +395,7 @@ function LogoMeridian() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -425,7 +425,7 @@ function LogoZentro() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -469,7 +469,7 @@ function LogoCaligo() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -499,7 +499,7 @@ function LogoRovik() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -531,7 +531,7 @@ function LogoElvora() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -563,7 +563,7 @@ function LogoTessera() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -598,7 +598,7 @@ function LogoBrinex() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -635,7 +635,7 @@ function LogoAveniq() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -673,7 +673,7 @@ function LogoCorvex() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"
@@ -703,7 +703,7 @@ function LogoLumora() {
         x="36"
         y="22"
         fill="#27272a"
-        style={{ fontFamily: "var(--font-general-sans), sans-serif" }}
+        style={{ fontFamily: "var(--font-geist-sans), sans-serif" }}
         fontSize="19"
         fontWeight="600"
         letterSpacing="-0.03em"

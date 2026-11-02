@@ -1,75 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-import localFont from "next/font/local";
+import { GeistSans } from "geist/font/sans";
+import { GeistSerif } from "geist/font/serif";
 import Navbar from "./components/navbar";
 import Footer from "./footer";
-
-const generalSans = localFont({
-  src: [
-    {
-      path: "./fonts/GeneralSans-Extralight.woff2",
-      weight: "200",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-ExtralightItalic.woff2",
-      weight: "200",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GeneralSans-Light.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-LightItalic.woff2",
-      weight: "300",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GeneralSans-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GeneralSans-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-MediumItalic.woff2",
-      weight: "500",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GeneralSans-Semibold.woff2",
-      weight: "600",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-SemiboldItalic.woff2",
-      weight: "600",
-      style: "italic",
-    },
-    {
-      path: "./fonts/GeneralSans-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "./fonts/GeneralSans-BoldItalic.woff2",
-      weight: "700",
-      style: "italic",
-    },
-  ],
-  variable: "--font-general-sans",
-});
 
 export const metadata: Metadata = {
   title: "Lattice",
@@ -84,7 +19,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${generalSans.className} ${generalSans.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistSerif.variable} h-full antialiased font-sans`}
     >
       <body className="relative flex min-h-full flex-col bg-zinc-100 scrollbar-none selection:bg-orange-100 selection:text-orange-950">
         <Navbar />
