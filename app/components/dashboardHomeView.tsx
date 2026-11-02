@@ -6,7 +6,6 @@ import { Slider } from "./ui/slider";
 import { cn } from "@/app/utility/cn";
 import {
   ChevronDownIcon,
-  ArrowUpIcon,
   EnterIcon,
 } from "../icons";
 
@@ -66,6 +65,7 @@ const DEPTH_STEPS = [
   { value: 1, label: "Quick" },
   { value: 2, label: "Standard" },
   { value: 3, label: "Deep" },
+  { value: 4, label: "Deep Research" },
 ];
 
 const PAST_CHATS = [
@@ -116,6 +116,8 @@ export default function DashboardHomeView() {
   const [modelDepth, setModelDepth] = useState<number>(2);
   const [chatInput, setChatInput] = useState<string>("");
   const [messages, setMessages] = useState<Array<{ sender: "user" | "lattice"; text: string }>>([]);
+  const [promptsExpanded, setPromptsExpanded] = useState<boolean>(false);
+  const [hoveredPrompt, setHoveredPrompt] = useState<number | null>(null);
 
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -165,42 +167,68 @@ export default function DashboardHomeView() {
     ]);
   };
 
+  const renderPromptItem = (prompt: string, index: number) => {
+    const isHovered = hoveredPrompt === index;
+    return (
+      <button
+        key={index}
+        type="button"
+        onClick={() => handleSelectPrompt(prompt)}
+        onMouseEnter={() => setHoveredPrompt(index)}
+        className="relative group flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out active:scale-[0.99] cursor-pointer select-none"
+      >
+        <AnimatePresence>
+          {isHovered && (
+            <HoverIndicator
+              layoutId="v2-quick-prompts-indicator"
+              rounded="rounded-xl"
+              bg="bg-zinc-200"
+            />
+          )}
+        </AnimatePresence>
+        <span className="relative z-10 leading-snug truncate">{prompt}</span>
+        <div className="relative z-10 flex items-center justify-center shrink-0 w-3.5 h-3.5 ml-2 pointer-events-none">
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                layoutId="v2-quick-prompts-enter-icon"
+                className="flex items-center justify-center text-zinc-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  layout: {
+                    type: "spring",
+                    stiffness: 380,
+                    damping: 32,
+                  },
+                  opacity: { duration: 0.12 },
+                }}
+              >
+                <EnterIcon
+                  width={11}
+                  height={11}
+                  strokeWidth={1.5}
+                  color="currentColor"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </button>
+    );
+  };
+
   return (
     <div className="flex h-full w-full overflow-hidden bg-white text-zinc-800">
       {/* Center Main Content Area: Centered Greeting & Pre-prompts, Chat Anchored to Bottom */}
       <div className="flex flex-1 flex-col items-center justify-between overflow-y-auto px-6 py-3 scrollbar-thin">
-        {/* Centered Content: Greeting & Faded Pre-prompts OR Active Conversation */}
+        {/* Centered Content: Greeting OR Active Conversation */}
         {messages.length === 0 ? (
-          <div className="flex flex-1 w-full max-w-[480px] flex-col items-center justify-center space-y-4 my-auto">
-            {/* Centered Header */}
-            <div className="flex flex-col items-center text-center select-none">
-              <h1 className="text-sm font-semibold tracking-tight text-zinc-900">
-                Hi, Karan
-              </h1>
-              <p className="mt-0.5 text-[11px] font-normal text-zinc-400">
-                Overview of your priority deals and team pipeline.
-              </p>
-            </div>
-
-            {/* Pre-prompts in faded text */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full">
-              {PRE_PROMPTS.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPrompt(prompt)}
-                  className="group flex items-center justify-between rounded-md px-2.5 py-1.5 text-left text-[11px] font-normal text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100/70 transition-[color,background-color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer"
-                >
-                  <span className="leading-snug">{prompt}</span>
-                  <ArrowUpIcon
-                    width={10}
-                    height={10}
-                    strokeWidth={1.5}
-                    className="rotate-45 shrink-0 text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity duration-150 ease-out ml-1"
-                  />
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-1 w-full max-w-[480px] flex-col items-center justify-center my-auto select-none">
+            <h1 className="text-base font-semibold tracking-tight text-zinc-900">
+              Hi, Karan
+            </h1>
           </div>
         ) : (
           <div className="flex flex-1 w-full max-w-[480px] flex-col justify-end space-y-2 py-3 overflow-y-auto scrollbar-thin">
@@ -241,33 +269,104 @@ export default function DashboardHomeView() {
 
         {/* Bottom Section: Chat Window Anchored to Bottom */}
         <div className="w-full max-w-[480px] shrink-0 pt-2 pb-1">
-
-          {/* Chat Window Outer Container: border, bg and paddings removed */}
+          {/* Chat Window Outer Container */}
           <div className="relative w-full">
-            {/* Prompt widget: border-none, bg-zinc-100 */}
-            <div className="flex items-center justify-between gap-3 rounded-full border-none bg-zinc-100 py-1 px-1 transition-colors focus-within:bg-zinc-100/90">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder="Ask Lattice about deals, pipeline risks, or schedule..."
-                className="w-full bg-transparent text-xs pl-2 font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleSendMessage}
-                className="flex h-12 w-12 shrink-0 items-center p-1 px-2 justify-center rounded-full bg-zinc-800 border border-zinc-400 text-zinc-100 hover:bg-zinc-700 active:scale-95 duration-150 ease-out cursor-pointer shadow-xs shadow-black"
-                title="Send"
-              >
-                <EnterIcon width={12} height={12} strokeWidth={1.75} color="currentColor" className="text-zinc-100" />
-              </button>
-            </div>
+            {/* Unified Prompt Capsule with Quick Prompts Extension for new chat */}
+            <motion.div
+              layout
+              transition={{
+                duration: 0.22,
+                ease: [0.23, 1, 0.32, 1],
+              }}
+              className="w-full rounded-2xl bg-zinc-100 p-1.5"
+            >
+              {/* Extension: Quick Prompts (shown only on new chat) */}
+              {messages.length === 0 && (
+                <div className="pb-1.5 mb-1 border-b border-zinc-200/60">
+                  {/* Extension Header: Title & Dropdown Toggle */}
+                  <div
+                    className="flex items-center justify-between px-2.5 py-1 select-none cursor-pointer group"
+                    onClick={() => setPromptsExpanded(!promptsExpanded)}
+                  >
+                    <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-600 transition-colors">
+                      Quick prompts
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={promptsExpanded ? "Collapse quick prompts" : "Expand quick prompts"}
+                      className="flex items-center justify-center text-zinc-400 hover:text-zinc-700 p-0.5 cursor-pointer"
+                    >
+                      <motion.div
+                        animate={{ rotate: promptsExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                      >
+                        <ChevronDownIcon
+                          width={12}
+                          height={12}
+                          strokeWidth={1.5}
+                        />
+                      </motion.div>
+                    </button>
+                  </div>
+
+                  {/* Prompts list: first 2 always visible */}
+                  <div
+                    className="flex flex-col space-y-0.5 mt-0.5"
+                    onMouseLeave={() => setHoveredPrompt(null)}
+                  >
+                    {PRE_PROMPTS.slice(0, 2).map((prompt, idx) =>
+                      renderPromptItem(prompt, idx)
+                    )}
+
+                    {/* Animated remaining prompts on expand/shrink */}
+                    <AnimatePresence initial={false}>
+                      {promptsExpanded && (
+                        <motion.div
+                          key="extended-prompts"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{
+                            duration: 0.22,
+                            ease: [0.23, 1, 0.32, 1],
+                          }}
+                          className="flex flex-col space-y-0.5 overflow-hidden"
+                        >
+                          {PRE_PROMPTS.slice(2).map((prompt, idx) =>
+                            renderPromptItem(prompt, idx + 2)
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              )}
+
+              {/* Prompt Input Row */}
+              <div className="flex items-center justify-between gap-3 pl-2 pr-0.5 py-0.5">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Ask Lattice about deals, pipeline risks, or schedule..."
+                  className="w-full bg-transparent text-xs pl-1 font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendMessage}
+                  className="flex shrink-0 items-center p-1 px-2 justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-100 hover:bg-zinc-700 active:scale-95 duration-150 ease-out cursor-pointer shadow-xs"
+                  title="Send"
+                >
+                  <EnterIcon width={12} height={12} strokeWidth={1.75} color="currentColor" className="text-zinc-100" />
+                </button>
+              </div>
+            </motion.div>
 
             {/* Model Menu tag placed AFTER prompt at bottom right */}
             <div className="relative mt-1.5 flex items-center justify-end" ref={modelDropdownRef}>
@@ -343,13 +442,16 @@ export default function DashboardHomeView() {
 
                     {/* Slider inside dropdown with title showing selected option */}
                     <div className="px-1.5 flex flex-col gap-1.5 pt-0.5">
-                      <span className="text-[10px] font-normal text-zinc-500 select-none">
-                        {DEPTH_STEPS.find((d) => d.value === modelDepth)?.label}
-                      </span>
+                      <div className="flex items-center justify-between text-[10px] select-none">
+                        <span className="font-normal text-zinc-400">Depth</span>
+                        <span className="font-medium text-zinc-800">
+                          {DEPTH_STEPS.find((d) => d.value === modelDepth)?.label}
+                        </span>
+                      </div>
                       <Slider
                         value={modelDepth}
                         min={1}
-                        max={3}
+                        max={4}
                         step={1}
                         onChange={setModelDepth}
                       />

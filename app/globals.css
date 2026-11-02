@@ -22,6 +22,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans), sans-serif;
   --font-serif: var(--font-geist-serif), serif;
+  --text-xxs: 10px;
+  --text-xxs--line-height: 14px;
+}
+
+@utility text-xxs {
+  font-size: 10px;
+  line-height: 14px;
 }
 
 body {
