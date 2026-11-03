@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Slider } from "./ui/slider";
 import { cn } from "@/app/utility/cn";
@@ -8,6 +8,9 @@ import {
   ChevronDownIcon,
   EnterIcon,
 } from "../icons";
+
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 interface LatticeModel {
   id: string;
@@ -93,15 +96,176 @@ function HoverIndicator({
       animate={{ opacity: isActive ? 0 : 1 }}
       exit={{ opacity: 0 }}
       transition={{
-        duration: 0.2,
-        ease: "easeInOut",
-        layout: {
-          type: "spring",
-          bounce: 0.15,
-          duration: 0.2,
-        },
+        type: "spring",
+        stiffness: 500,
+        damping: 35,
       }}
     />
+  );
+}
+
+export function QuickPromptsDropdown({
+  isVisible = true,
+  onSelectPrompt,
+}: {
+  isVisible?: boolean;
+  onSelectPrompt: (prompt: string) => void;
+}) {
+  const [promptsExpanded, setPromptsExpanded] = useState<boolean>(false);
+  const [hoveredPrompt, setHoveredPrompt] = useState<number | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  // Store the exact pixel insets required to crop the full box down to the header pill
+  const [cropInsets, setCropInsets] = useState({ top: 0, right: 0 });
+
+  useIsomorphicLayoutEffect(() => {
+    const measure = () => {
+      if (!containerRef.current || !headerRef.current) return;
+      const fullRect = containerRef.current.getBoundingClientRect();
+      const headerRect = headerRef.current.getBoundingClientRect();
+
+      // Paddings: p-1 is 4px on each side (8px total)
+      const collapsedWidth = headerRect.width + 8;
+      const collapsedHeight = headerRect.height + 8;
+
+      setCropInsets({
+        right: Math.max(0, fullRect.width - collapsedWidth),
+        top: Math.max(0, fullRect.height - collapsedHeight),
+      });
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
+  const renderPromptItem = (prompt: string, index: number) => {
+    const isHovered = hoveredPrompt === index;
+    return (
+      <button
+        key={index}
+        type="button"
+        onClick={() => onSelectPrompt(prompt)}
+        onMouseEnter={() => setHoveredPrompt(index)}
+        className="relative group flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out active:scale-[0.99] cursor-pointer select-none"
+      >
+        <AnimatePresence>
+          {isHovered && (
+            <HoverIndicator
+              layoutId="v2-quick-prompts-indicator"
+              rounded="rounded-xl"
+              bg="bg-zinc-200"
+            />
+          )}
+        </AnimatePresence>
+
+        <span className="relative z-10 leading-snug whitespace-nowrap truncate">
+          {prompt}
+        </span>
+
+        <div className="relative z-10 flex items-center justify-center shrink-0 w-3.5 h-3.5 ml-2 pointer-events-none">
+          <AnimatePresence>
+            {isHovered && (
+              <motion.div
+                layoutId="v2-quick-prompts-enter-icon"
+                className="flex items-center justify-center text-zinc-500"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  layout: { type: "spring", stiffness: 380, damping: 32 },
+                  opacity: { duration: 0.12 },
+                }}
+              >
+                <EnterIcon width={11} height={11} strokeWidth={1.5} color="currentColor" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </button>
+    );
+  };
+
+  return (
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{
+            opacity: 0,
+            y: 6,
+            transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+          }}
+          className="absolute bottom-full mb-1.5 left-0 z-20 pointer-events-none"
+        >
+          {/* 
+            Look closely at the geometry:
+            When collapsed, the box sits at `bottom-0 left-0`.
+            As it expands, the WHOLE container translates upward smoothly while `clipPath`
+            unveils the bottom and right edges with a live 16px border radius!
+          */}
+          <motion.div
+            ref={containerRef}
+            initial={false}
+            animate={{
+              clipPath: promptsExpanded
+                ? "inset(0px 0px 0px 0px round 16px)"
+                : `inset(${cropInsets.top}px ${cropInsets.right}px 0px 0px round 16px)`,
+            }}
+            transition={{
+              duration: 0.25,
+              ease: [0.23, 1, 0.32, 1],
+            }}
+            className="w-max rounded-2xl bg-zinc-100 p-1 will-change-[clip-path] pointer-events-auto"
+          >
+            {/* Prompts list: Placed ABOVE the title Quick Prompts */}
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: promptsExpanded ? 1 : 0,
+              }}
+              transition={{
+                duration: 0.25,
+                ease: [0.23, 1, 0.32, 1],
+              }}
+              onMouseLeave={() => setHoveredPrompt(null)}
+              className={cn(
+                "flex flex-col space-y-0.5 pb-0.5 w-max",
+                !promptsExpanded && "pointer-events-none"
+              )}
+            >
+              {PRE_PROMPTS.map((prompt, idx) => renderPromptItem(prompt, idx))}
+            </motion.div>
+
+            {/* Header: Fixed at bottom-left */}
+            <div
+              ref={headerRef}
+              className="flex items-center gap-1.5 px-2 py-1 select-none cursor-pointer group w-max"
+              onClick={() => setPromptsExpanded(!promptsExpanded)}
+            >
+              <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-600 transition-colors whitespace-nowrap">
+                Quick prompts
+              </span>
+              <button
+                type="button"
+                aria-label={promptsExpanded ? "Collapse quick prompts" : "Expand quick prompts"}
+                className="flex items-center justify-center text-zinc-400 hover:text-zinc-700 p-0.5 cursor-pointer shrink-0"
+              >
+                <motion.div
+                  animate={{ rotate: promptsExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+                >
+                  <ChevronDownIcon width={12} height={12} strokeWidth={1.5} />
+                </motion.div>
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -116,8 +280,6 @@ export default function DashboardHomeView() {
   const [modelDepth, setModelDepth] = useState<number>(2);
   const [chatInput, setChatInput] = useState<string>("");
   const [messages, setMessages] = useState<Array<{ sender: "user" | "lattice"; text: string }>>([]);
-  const [promptsExpanded, setPromptsExpanded] = useState<boolean>(false);
-  const [hoveredPrompt, setHoveredPrompt] = useState<number | null>(null);
 
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -167,71 +329,22 @@ export default function DashboardHomeView() {
     ]);
   };
 
-  const renderPromptItem = (prompt: string, index: number) => {
-    const isHovered = hoveredPrompt === index;
-    return (
-      <button
-        key={index}
-        type="button"
-        onClick={() => handleSelectPrompt(prompt)}
-        onMouseEnter={() => setHoveredPrompt(index)}
-        className="relative group flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out active:scale-[0.99] cursor-pointer select-none"
-      >
-        <AnimatePresence>
-          {isHovered && (
-            <HoverIndicator
-              layoutId="v2-quick-prompts-indicator"
-              rounded="rounded-xl"
-              bg="bg-zinc-200"
-            />
-          )}
-        </AnimatePresence>
-        <span className="relative z-10 leading-snug truncate">{prompt}</span>
-        <div className="relative z-10 flex items-center justify-center shrink-0 w-3.5 h-3.5 ml-2 pointer-events-none">
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                layoutId="v2-quick-prompts-enter-icon"
-                className="flex items-center justify-center text-zinc-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  layout: {
-                    type: "spring",
-                    stiffness: 380,
-                    damping: 32,
-                  },
-                  opacity: { duration: 0.12 },
-                }}
-              >
-                <EnterIcon
-                  width={11}
-                  height={11}
-                  strokeWidth={1.5}
-                  color="currentColor"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </button>
-    );
-  };
-
   return (
     <div className="flex h-full w-full overflow-hidden bg-white text-zinc-800">
-      {/* Center Main Content Area: Centered Greeting & Pre-prompts, Chat Anchored to Bottom */}
-      <div className="flex flex-1 flex-col items-center justify-between overflow-y-auto px-6 py-3 scrollbar-thin">
+      {/* Center Main Content Area: Relative container with NO scrollable surface */}
+      <div className="relative flex flex-1 flex-col items-center justify-center h-full w-full overflow-hidden px-6 scrollbar-none">
         {/* Centered Content: Greeting OR Active Conversation */}
         {messages.length === 0 ? (
-          <div className="flex flex-1 w-full max-w-[480px] flex-col items-center justify-center my-auto select-none">
-            <h1 className="text-base font-semibold tracking-tight text-zinc-900">
+          <div className="flex flex-col items-center justify-center text-center select-none -translate-y-6">
+            {/*<h1 className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-900">
               Hi, Karan
             </h1>
+            <p className="mt-1 text-xs font-normal text-zinc-400">
+              Overview of your priority deals, pipeline risks, and team cadence.
+            </p>*/}
           </div>
         ) : (
-          <div className="flex flex-1 w-full max-w-[480px] flex-col justify-end space-y-2 py-3 overflow-y-auto scrollbar-thin">
+          <div className="flex flex-1 w-full max-w-[480px] flex-col justify-end space-y-2 pt-6 pb-24 overflow-hidden">
             <div className="flex items-center justify-between pb-1 border-b border-zinc-100 select-none">
               <span className="text-[10px] text-zinc-400">Conversation</span>
               <button
@@ -242,7 +355,7 @@ export default function DashboardHomeView() {
                 Reset
               </button>
             </div>
-            <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 scrollbar-none">
               {messages.map((m, i) => (
                 <div
                   key={i}
@@ -267,81 +380,18 @@ export default function DashboardHomeView() {
           </div>
         )}
 
-        {/* Bottom Section: Chat Window Anchored to Bottom */}
-        <div className="w-full max-w-[480px] shrink-0 pt-2 pb-1">
+        {/* Prompt Box: Placed Absolutely at Bottom in Center */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-6 sm:px-0 z-30 pointer-events-auto">
           {/* Chat Window Outer Container */}
           <div className="relative w-full">
-            {/* Unified Prompt Capsule with Quick Prompts Extension for new chat */}
-            <motion.div
-              layout
-              transition={{
-                duration: 0.22,
-                ease: [0.23, 1, 0.32, 1],
-              }}
-              className="w-full rounded-2xl bg-zinc-100 p-1.5"
-            >
-              {/* Extension: Quick Prompts (shown only on new chat) */}
-              {messages.length === 0 && (
-                <div className="pb-1.5 mb-1 border-b border-zinc-200/60">
-                  {/* Extension Header: Title & Dropdown Toggle */}
-                  <div
-                    className="flex items-center justify-between px-2.5 py-1 select-none cursor-pointer group"
-                    onClick={() => setPromptsExpanded(!promptsExpanded)}
-                  >
-                    <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-600 transition-colors">
-                      Quick prompts
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={promptsExpanded ? "Collapse quick prompts" : "Expand quick prompts"}
-                      className="flex items-center justify-center text-zinc-400 hover:text-zinc-700 p-0.5 cursor-pointer"
-                    >
-                      <motion.div
-                        animate={{ rotate: promptsExpanded ? 180 : 0 }}
-                        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                      >
-                        <ChevronDownIcon
-                          width={12}
-                          height={12}
-                          strokeWidth={1.5}
-                        />
-                      </motion.div>
-                    </button>
-                  </div>
+            {/* Quick Prompts Extension */}
+            <QuickPromptsDropdown
+              isVisible={messages.length === 0}
+              onSelectPrompt={handleSelectPrompt}
+            />
 
-                  {/* Prompts list: first 2 always visible */}
-                  <div
-                    className="flex flex-col space-y-0.5 mt-0.5"
-                    onMouseLeave={() => setHoveredPrompt(null)}
-                  >
-                    {PRE_PROMPTS.slice(0, 2).map((prompt, idx) =>
-                      renderPromptItem(prompt, idx)
-                    )}
-
-                    {/* Animated remaining prompts on expand/shrink */}
-                    <AnimatePresence initial={false}>
-                      {promptsExpanded && (
-                        <motion.div
-                          key="extended-prompts"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{
-                            duration: 0.22,
-                            ease: [0.23, 1, 0.32, 1],
-                          }}
-                          className="flex flex-col space-y-0.5 overflow-hidden"
-                        >
-                          {PRE_PROMPTS.slice(2).map((prompt, idx) =>
-                            renderPromptItem(prompt, idx + 2)
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              )}
-
+            {/* Stable Prompt Capsule: input and enter button stay rock-solid */}
+            <div className="w-full rounded-2xl bg-zinc-100 p-1.5">
               {/* Prompt Input Row */}
               <div className="flex items-center justify-between gap-3 pl-2 pr-0.5 py-0.5">
                 <input
@@ -355,7 +405,7 @@ export default function DashboardHomeView() {
                     }
                   }}
                   placeholder="Ask Lattice about deals, pipeline risks, or schedule..."
-                  className="w-full bg-transparent text-xs pl-1 font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
+                  className="w-full bg-transparent text-xs  font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
                 />
                 <button
                   type="button"
@@ -366,7 +416,7 @@ export default function DashboardHomeView() {
                   <EnterIcon width={12} height={12} strokeWidth={1.75} color="currentColor" className="text-zinc-100" />
                 </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Model Menu tag placed AFTER prompt at bottom right */}
             <div className="relative mt-1.5 flex items-center justify-end" ref={modelDropdownRef}>
