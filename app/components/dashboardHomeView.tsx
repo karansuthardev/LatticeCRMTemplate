@@ -96,9 +96,8 @@ function HoverIndicator({
       animate={{ opacity: isActive ? 0 : 1 }}
       exit={{ opacity: 0 }}
       transition={{
-        type: "spring",
-        stiffness: 500,
-        damping: 35,
+        duration: 0.16,
+        ease: "easeOut",
       }}
     />
   );
@@ -161,9 +160,8 @@ export function QuickPromptsDropdown({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{
-                type: "spring",
-                stiffness: 500,
-                damping: 35,
+                duration: 0.16,
+                ease: "easeOut",
               }}
             >
               <EnterIcon
