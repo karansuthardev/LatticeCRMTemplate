@@ -149,15 +149,31 @@ export function QuickPromptsDropdown({
         type="button"
         onClick={() => onSelectPrompt(prompt)}
         onMouseEnter={() => setHoveredPrompt(index)}
-        className="relative group flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out active:scale-[0.99] cursor-pointer select-none"
+        className="relative group flex w-full items-center justify-between rounded-xl pl-2.5 pr-2 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out cursor-pointer select-none"
       >
+        {/* Unified Hover Container: moving indicator pill and enter icon together */}
         <AnimatePresence>
           {isHovered && (
-            <HoverIndicator
+            <motion.div
               layoutId="v2-quick-prompts-indicator"
-              rounded="rounded-xl"
-              bg="bg-zinc-200"
-            />
+              className="absolute inset-0 rounded-xl bg-zinc-200 flex items-center justify-end pr-2 pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 35,
+              }}
+            >
+              <EnterIcon
+                width={11}
+                height={11}
+                strokeWidth={1.5}
+                color="currentColor"
+                className="text-zinc-500 transition-transform duration-100 ease-out group-active:translate-x-1"
+              />
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -165,25 +181,8 @@ export function QuickPromptsDropdown({
           {prompt}
         </span>
 
-        <div className="relative z-10 flex items-center justify-center shrink-0 w-3.5 h-3.5 ml-2 pointer-events-none">
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                layoutId="v2-quick-prompts-enter-icon"
-                className="flex items-center justify-center text-zinc-500"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{
-                  layout: { type: "spring", stiffness: 380, damping: 32 },
-                  opacity: { duration: 0.12 },
-                }}
-              >
-                <EnterIcon width={11} height={11} strokeWidth={1.5} color="currentColor" />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        {/* Space reservation so text never overlaps the icon */}
+        <div className="w-3.5 h-3.5 shrink-0 ml-2 opacity-0 pointer-events-none" />
       </button>
     );
   };
@@ -243,24 +242,20 @@ export function QuickPromptsDropdown({
             {/* Header: Fixed at bottom-left */}
             <div
               ref={headerRef}
-              className="flex items-center gap-1.5 px-2 py-1 select-none cursor-pointer group w-max"
+              className="group flex items-center gap-1.5 px-2 py-1 select-none cursor-pointer w-max"
               onClick={() => setPromptsExpanded(!promptsExpanded)}
             >
-              <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-600 transition-colors whitespace-nowrap">
+              <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-800 transition-colors duration-150 ease-out whitespace-nowrap">
                 Quick prompts
               </span>
-              <button
-                type="button"
-                aria-label={promptsExpanded ? "Collapse quick prompts" : "Expand quick prompts"}
-                className="flex items-center justify-center text-zinc-400 hover:text-zinc-700 p-0.5 cursor-pointer shrink-0"
-              >
+              <div className="flex items-center justify-center text-zinc-400 group-hover:text-zinc-800 transition-colors duration-150 ease-out p-0.5 shrink-0 pointer-events-none">
                 <motion.div
                   animate={{ rotate: promptsExpanded ? 180 : 0 }}
                   transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
                 >
                   <ChevronDownIcon width={12} height={12} strokeWidth={1.5} />
                 </motion.div>
-              </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
