@@ -9,7 +9,9 @@ import {
   EnterIcon,
   MicrophoneIcon,
   OmegaIcon,
-  AiInnovationIcon,
+  PlusIcon,
+  AutoApproveIcon,
+  FullAccessIcon,
 } from "../icons";
 
 const useIsomorphicLayoutEffect =
@@ -52,7 +54,7 @@ const LATTICE_MODELS: LatticeModel[] = [
     id: "auto",
     name: "Auto",
     description:
-      "Automatically routes your requests to the best model based on prompt complexity, speed requirements, and task context.",
+      "Routes requests to the optimal model based on task complexity and context.",
     speed: "Dynamic",
   },
   {
@@ -60,7 +62,7 @@ const LATTICE_MODELS: LatticeModel[] = [
     name: "Modula Core",
     version: "1.4",
     description:
-      "General-purpose business intelligence for understanding your business, interpreting requests, retrieving relevant information, and coordinating everyday tasks.",
+      "Understands business context, interprets requests, and assists with everyday tasks.",
     speed: "Standard",
   },
   {
@@ -68,7 +70,7 @@ const LATTICE_MODELS: LatticeModel[] = [
     name: "Modula Forma",
     version: "2.1",
     description:
-      "Specialized in numerical and statistical analysis, identifying patterns and trends, and turning business data into meaningful visualizations.",
+      "Analyzes statistics, identifies trends, and transforms data into visualizations.",
     speed: "Fast",
   },
   {
@@ -76,7 +78,7 @@ const LATTICE_MODELS: LatticeModel[] = [
     name: "Modula Scribe",
     version: "1.2",
     description:
-      "Specialized in understanding conversations and written information, generating meeting notes, extracting action items, and preparing meeting briefs and follow-ups.",
+      "Interprets text, summarizes meetings, and extracts action items and follow-ups.",
     speed: "Deep",
   },
 ];
@@ -86,6 +88,35 @@ const DEPTH_STEPS = [
   { value: 2, label: "Standard" },
   { value: 3, label: "Deep" },
   { value: 4, label: "Deep Research" },
+];
+
+interface PermissionMode {
+  id: "auto-approve" | "full-access";
+  label: string;
+  subtitle: string;
+  icon: React.ComponentType<{
+    width?: number | string;
+    height?: number | string;
+    className?: string;
+    strokeWidth?: number | string;
+  }>;
+}
+
+const PERMISSION_MODES: PermissionMode[] = [
+  {
+    id: "auto-approve",
+    label: "Auto-approve",
+    subtitle:
+      "Asks for confirmation before modifying records or sending communications.",
+    icon: AutoApproveIcon,
+  },
+  {
+    id: "full-access",
+    label: "Full access",
+    subtitle:
+      "Runs all CRM actions, data updates, and workflows without prompting.",
+    icon: FullAccessIcon,
+  },
 ];
 
 const PAST_CHATS = [
@@ -219,7 +250,7 @@ export function QuickPromptsDropdown({
             <motion.div
               layoutId="v2-quick-prompts-indicator"
               layout="position"
-              className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-xl bg-zinc-200 pr-2"
+              className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-xl bg-zinc-100 pr-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -260,7 +291,10 @@ export function QuickPromptsDropdown({
             y: 6,
             transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
           }}
-          className="pointer-events-none absolute bottom-full left-0 z-20 mb-1.5"
+          className={cn(
+            "pointer-events-none absolute bottom-full left-0 z-20 mb-1.5 transition-[filter] duration-200",
+            promptsExpanded && "drop-shadow-md",
+          )}
         >
           {/*
             Look closely at the geometry:
@@ -280,7 +314,12 @@ export function QuickPromptsDropdown({
               duration: 0.25,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className="pointer-events-auto w-max rounded-2xl bg-zinc-100 p-1 will-change-[clip-path]"
+            className={cn(
+              "pointer-events-auto w-max rounded-2xl p-1 transition-colors duration-200 ease-out will-change-[clip-path]",
+              promptsExpanded
+                ? "border border-zinc-100 bg-zinc-50 shadow-md"
+                : "border border-transparent bg-transparent shadow-none",
+            )}
           >
             {/* Prompts list: Placed ABOVE the title Quick Prompts */}
             <motion.div
@@ -331,29 +370,13 @@ export default function DashboardHomeView() {
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
 
-  // Model Info Menu state with 400ms delay on hovering AiInnovationIcon
-  const [infoModelId, setInfoModelId] = useState<string | null>(null);
-  const infoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleInfoMouseEnter = (modelId: string) => {
-    if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
-    infoTimeoutRef.current = setTimeout(() => {
-      setInfoModelId(modelId);
-    }, 400);
-  };
-
-  const handleInfoMouseLeave = () => {
-    if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
-    infoTimeoutRef.current = setTimeout(() => {
-      setInfoModelId(null);
-    }, 150);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
-    };
-  }, []);
+  const [selectedPermissionId, setSelectedPermissionId] = useState<
+    "auto-approve" | "full-access"
+  >("auto-approve");
+  const [permissionDropdownOpen, setPermissionDropdownOpen] = useState(false);
+  const [hoveredPermission, setHoveredPermission] = useState<string | null>(
+    null,
+  );
 
   const [usagePopupOpen, setUsagePopupOpen] = useState(false);
   const usageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -388,12 +411,16 @@ export default function DashboardHomeView() {
   >([]);
 
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+  const permissionDropdownRef = useRef<HTMLDivElement>(null);
 
   const currentModel =
     LATTICE_MODELS.find((m) => m.id === selectedModelId) || LATTICE_MODELS[0];
-  const infoModelData = LATTICE_MODELS.find((m) => m.id === infoModelId);
+  const currentPermission =
+    PERMISSION_MODES.find((p) => p.id === selectedPermissionId) ||
+    PERMISSION_MODES[0];
+  const CurrentPermissionIcon = currentPermission.icon;
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -402,8 +429,13 @@ export default function DashboardHomeView() {
       ) {
         setModelDropdownOpen(false);
         setHoveredModel(null);
-        if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
-        setInfoModelId(null);
+      }
+      if (
+        permissionDropdownRef.current &&
+        !permissionDropdownRef.current.contains(event.target as Node)
+      ) {
+        setPermissionDropdownOpen(false);
+        setHoveredPermission(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -549,308 +581,366 @@ export default function DashboardHomeView() {
               </div>
             </div>
 
-            {/* Prompt Footer Row: Limit & Model Selector grouped together at bottom right */}
-            <div
-              className="relative mt-1.5 flex items-center justify-end gap-1 px-1"
-              ref={modelDropdownRef}
-            >
-              {/* Limit Remaining: placed near model selector toggle (hovers with 400ms delay to show limits) */}
-              <div className="relative">
+            {/* Prompt Footer Row: Add Button & Permission Mode on Left, Limit & Model Selector on Right */}
+            <div className="relative mt-1.5 flex items-center justify-between px-1">
+              {/* Left End: Add Icon Button & Permission Mode Selector */}
+              <div
+                className="flex items-center gap-1"
+                ref={permissionDropdownRef}
+              >
                 <button
                   type="button"
-                  onMouseEnter={handleUsageMouseEnter}
-                  onMouseLeave={handleUsageMouseLeave}
-                  onClick={() => setUsagePopupOpen((prev) => !prev)}
-                  className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1.5 rounded-md px-1.5 text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
-                  aria-label="Usage limits"
+                  className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-zinc-400 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-700"
+                  title="Add attachment"
+                  aria-label="Add attachment"
                 >
-                  <span>56%</span>
-                  <CircularProgress value={56} size={10} strokeWidth={1.5} />
+                  <PlusIcon width={12} height={12} strokeWidth={2} />
                 </button>
 
-                {/* Usage Limits Popup */}
-                <AnimatePresence>
-                  {usagePopupOpen && (
-                    <motion.div
-                      key="usage-limits-popup"
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.96 }}
-                      transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
-                      style={{
-                        willChange: "transform, opacity",
-                        transform: "translateZ(0)",
-                      }}
-                      onMouseEnter={handleUsageMouseEnter}
-                      onMouseLeave={handleUsageMouseLeave}
-                      className="absolute right-0 bottom-full z-50 mb-1.5 w-56 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-3 shadow-xl will-change-transform select-none"
-                    >
-                      <div className="flex flex-col gap-2.5">
-                        {/* 5hr Limit Item */}
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xxs flex items-center justify-between">
-                            <span className="font-normal text-zinc-800">
-                              5hr limit
-                            </span>
-                            <span className="font-normal text-zinc-600">
-                              56% left
-                            </span>
-                          </div>
-                          {/* Micro linear progress bar */}
-                          <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
-                            <div
-                              className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
-                              style={{ width: "56%" }}
-                            />
-                          </div>
-                          <div className="text-xxs font-normal text-zinc-600">
-                            Resets in 2h 14m
-                          </div>
+                {/* Permission Mode Selector Toggle */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setPermissionDropdownOpen((prev) => !prev)}
+                    className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1 rounded-md border-none bg-transparent px-1.5 font-medium text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
+                  >
+                    <CurrentPermissionIcon
+                      width={11}
+                      height={11}
+                      strokeWidth={1.5}
+                      className="shrink-0 text-zinc-400"
+                    />
+                    <span>{currentPermission.label}</span>
+                    <ChevronDownIcon
+                      width={10}
+                      height={10}
+                      strokeWidth={1.5}
+                      className={cn(
+                        "text-zinc-400 transition-transform",
+                        permissionDropdownOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+
+                  {/* Dropdown Menu: Appears UP aligned to left (`left-0 bottom-full mb-1.5`) */}
+                  <AnimatePresence>
+                    {permissionDropdownOpen && (
+                      <motion.div
+                        key="permission-dropdown-menu"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseLeave={() => setHoveredPermission(null)}
+                        initial={{
+                          opacity: 0,
+                          scale: 0.96,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          scale: 1,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          scale: 0.96,
+                        }}
+                        transition={{
+                          duration: 0.16,
+                          ease: [0.23, 1, 0.32, 1],
+                        }}
+                        style={{
+                          willChange: "transform, opacity",
+                          transform: "translateZ(0)",
+                        }}
+                        className="absolute bottom-full left-0 z-50 mb-1.5 w-60 origin-bottom-left rounded-2xl border border-zinc-200/80 bg-zinc-50 p-1.5 shadow-xl will-change-transform select-none"
+                      >
+                        <div className="space-y-1">
+                          {PERMISSION_MODES.map((mode) => {
+                            const isActive = selectedPermissionId === mode.id;
+                            const isHovered = hoveredPermission === mode.id;
+                            const ModeIcon = mode.icon;
+                            return (
+                              <button
+                                key={mode.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPermissionId(mode.id);
+                                  setPermissionDropdownOpen(false);
+                                }}
+                                onMouseEnter={() =>
+                                  setHoveredPermission(mode.id)
+                                }
+                                onMouseLeave={() => {
+                                  if (hoveredPermission === mode.id)
+                                    setHoveredPermission(null);
+                                }}
+                                className={cn(
+                                  "group text-xxs relative flex w-full cursor-pointer flex-col rounded-xl p-2 text-left transition-colors select-none",
+                                  isActive
+                                    ? "bg-zinc-100"
+                                    : "hover:text-zinc-800",
+                                )}
+                              >
+                                <AnimatePresence>
+                                  {isHovered && (
+                                    <HoverIndicator
+                                      layoutId="v2-permission-hover-indicator"
+                                      rounded="rounded-xl"
+                                      isActive={isActive}
+                                      bg="bg-zinc-100"
+                                    />
+                                  )}
+                                </AnimatePresence>
+                                <div className="relative z-10 flex w-full items-center justify-between">
+                                  <div className="flex items-center gap-1.5 font-medium text-zinc-800">
+                                    <ModeIcon
+                                      width={12}
+                                      height={12}
+                                      strokeWidth={1.5}
+                                      className="shrink-0 text-zinc-500"
+                                    />
+                                    <span>{mode.label}</span>
+                                  </div>
+                                  {isActive && (
+                                    <span className="text-xxs font-normal text-zinc-400">
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="relative z-10 mt-1 pl-4.5 leading-snug font-normal text-zinc-500">
+                                  {mode.subtitle}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Right End: Grouped Model Selector & Limit Remaining */}
+              <div className="flex items-center gap-1" ref={modelDropdownRef}>
+                {/* Model Selector Toggle */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
+                    className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1 rounded-md border-none bg-transparent px-1.5 font-medium text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
+                  >
+                    <span>{currentModel.name}</span>
+                    <ChevronDownIcon
+                      width={10}
+                      height={10}
+                      strokeWidth={1.5}
+                      className={cn(
+                        "text-zinc-400 transition-transform",
+                        modelDropdownOpen && "rotate-180",
+                      )}
+                    />
+                  </button>
+
+                  {/* Dropdown Menu: Appears UP aligned to right (`right-0 bottom-full mb-1.5`), rounded-2xl with fade + subtle scale */}
+                  <AnimatePresence>
+                    {modelDropdownOpen && (
+                      <motion.div
+                        key="model-dropdown-menu"
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseLeave={() => setHoveredModel(null)}
+                        initial={{
+                          opacity: 0,
+                          scale: 0.96,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          scale: 1,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          scale: 0.96,
+                        }}
+                        transition={{
+                          duration: 0.16,
+                          ease: [0.23, 1, 0.32, 1],
+                        }}
+                        style={{
+                          willChange: "transform, opacity",
+                          transform: "translateZ(0)",
+                        }}
+                        className="absolute right-0 bottom-full z-50 mb-1.5 w-48 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2 shadow-xl will-change-transform"
+                      >
+                        <div className="space-y-0.5">
+                          {LATTICE_MODELS.map((model) => {
+                            const isActive = selectedModelId === model.id;
+                            const isHovered = hoveredModel === model.id;
+                            return (
+                              <button
+                                key={model.id}
+                                type="button"
+                                onClick={() => setSelectedModelId(model.id)}
+                                onMouseEnter={() => setHoveredModel(model.id)}
+                                onMouseLeave={() => {
+                                  if (hoveredModel === model.id)
+                                    setHoveredModel(null);
+                                }}
+                                className={cn(
+                                  "group text-xxs relative flex w-full cursor-pointer items-center rounded-lg px-2.5 py-1 text-left transition-colors select-none",
+                                  isActive
+                                    ? "bg-zinc-100"
+                                    : "hover:text-zinc-800",
+                                )}
+                              >
+                                <AnimatePresence>
+                                  {isHovered && (
+                                    <HoverIndicator
+                                      layoutId="v2-model-hover-indicator"
+                                      rounded="rounded-lg"
+                                      isActive={isActive}
+                                      bg="bg-zinc-100"
+                                    />
+                                  )}
+                                </AnimatePresence>
+                                <span
+                                  className={cn(
+                                    "relative z-10 flex items-center gap-1.5 font-normal whitespace-nowrap transition-colors duration-150",
+                                    isActive
+                                      ? "text-zinc-800"
+                                      : "text-zinc-700",
+                                  )}
+                                >
+                                  <span>{model.name}</span>
+                                  {model.version && (
+                                    <>
+                                      <span className="text-zinc-400 select-none">
+                                        —
+                                      </span>
+                                      <span className="inline-flex items-center gap-0.5 font-normal text-zinc-600">
+                                        <OmegaIcon
+                                          width={10}
+                                          height={10}
+                                          strokeWidth={1.5}
+                                          className="shrink-0 text-zinc-600"
+                                        />
+                                        <span>{model.version}</span>
+                                      </span>
+                                    </>
+                                  )}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </div>
 
                         {/* Full-width Divider */}
-                        <div className="-mx-3 border-t border-zinc-200/70" />
+                        <div className="-mx-2 my-1.5 border-t border-zinc-200/70" />
 
-                        {/* Weekly Limit Item */}
-                        <div className="flex flex-col gap-1">
-                          <div className="text-xxs flex items-center justify-between">
+                        {/* Slider inside dropdown with selected depth value on left */}
+                        <div className="flex flex-col gap-1.5 px-2.5 pb-0.5">
+                          <div className="text-xxs flex items-center select-none">
                             <span className="font-normal text-zinc-800">
-                              Weekly limit
+                              {
+                                DEPTH_STEPS.find((d) => d.value === modelDepth)
+                                  ?.label
+                              }
                             </span>
-                            <span className="font-normal text-zinc-600">
-                              82% left
-                            </span>
                           </div>
-                          {/* Micro linear progress bar */}
-                          <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
-                            <div
-                              className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
-                              style={{ width: "82%" }}
-                            />
-                          </div>
-                          <div className="text-xxs font-normal text-zinc-600">
-                            Resets Monday at 9:00 AM
-                          </div>
+                          <Slider
+                            value={modelDepth}
+                            min={1}
+                            max={4}
+                            step={1}
+                            onChange={setModelDepth}
+                          />
                         </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Model Menu tag placed at bottom right */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-                  className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1 rounded-md border-none bg-transparent px-1.5 font-medium text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
-                >
-                  <span>{currentModel.name}</span>
-                  <ChevronDownIcon
-                    width={10}
-                    height={10}
-                    strokeWidth={1.5}
-                    className={cn(
-                      "text-zinc-400 transition-transform",
-                      modelDropdownOpen && "rotate-180",
+                      </motion.div>
                     )}
-                  />
-                </button>
+                  </AnimatePresence>
+                </div>
 
-                {/* Dropdown Menu: Appears UP aligned to right (`right-0 bottom-full mb-1.5`), rounded-2xl with fade + subtle scale */}
-                <AnimatePresence>
-                  {modelDropdownOpen && (
-                    <motion.div
-                      key="model-dropdown-menu"
-                      onClick={(e) => e.stopPropagation()}
-                      onMouseLeave={() => {
-                        setHoveredModel(null);
-                        handleInfoMouseLeave();
-                      }}
-                      initial={{
-                        opacity: 0,
-                        scale: 0.96,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      exit={{
-                        opacity: 0,
-                        scale: 0.96,
-                      }}
-                      transition={{
-                        duration: 0.16,
-                        ease: [0.23, 1, 0.32, 1],
-                      }}
-                      style={{
-                        willChange: "transform, opacity",
-                        transform: "translateZ(0)",
-                      }}
-                      className="absolute right-0 bottom-full z-50 mb-1.5 w-48 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2 shadow-xl will-change-transform"
-                    >
-                      {/* Model Info Hover Card (triggered after 400ms delay on hovering AiInnovationIcon) */}
-                      <AnimatePresence>
-                        {infoModelData && (
-                          <motion.div
-                            key="model-info-card"
-                            initial={{ opacity: 0, scale: 0.96, x: 4 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, x: 4 }}
-                            transition={{
-                              duration: 0.16,
-                              ease: [0.23, 1, 0.32, 1],
-                            }}
-                            style={{
-                              willChange: "transform, opacity",
-                              transform: "translateZ(0)",
-                            }}
-                            onMouseEnter={() => {
-                              if (infoTimeoutRef.current)
-                                clearTimeout(infoTimeoutRef.current);
-                            }}
-                            onMouseLeave={handleInfoMouseLeave}
-                            className="absolute top-0 right-full z-50 mr-1.5 w-60 origin-top-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2.5 shadow-xl will-change-transform select-none"
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="text-xxs flex items-center gap-1.5">
-                                <span className="font-medium text-zinc-800">
-                                  {infoModelData.name}
-                                </span>
-                                {infoModelData.version && (
-                                  <>
-                                    <span className="inline-flex items-center gap-0.5 font-normal text-zinc-600">
-                                      <OmegaIcon
-                                        width={10}
-                                        height={10}
-                                        strokeWidth={3}
-                                        className="shrink-0 text-zinc-600"
-                                      />
-                                      <span>{infoModelData.version}</span>
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                              <p className="text-xxs leading-relaxed font-normal text-zinc-600">
-                                {infoModelData.description}
-                              </p>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                {/* Limit Remaining: placed after model selector (hovers with 400ms delay to show limits) */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onMouseEnter={handleUsageMouseEnter}
+                    onMouseLeave={handleUsageMouseLeave}
+                    onClick={() => setUsagePopupOpen((prev) => !prev)}
+                    className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1.5 rounded-md px-1.5 text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
+                    aria-label="Usage limits"
+                  >
+                    <span>56%</span>
+                    <CircularProgress value={56} size={10} strokeWidth={1.5} />
+                  </button>
 
-                      <div className="space-y-0.5">
-                        {LATTICE_MODELS.map((model) => {
-                          const isActive = selectedModelId === model.id;
-                          const isHovered = hoveredModel === model.id;
-                          const isInfoActive = infoModelId === model.id;
-                          return (
-                            <button
-                              key={model.id}
-                              type="button"
-                              onClick={() => setSelectedModelId(model.id)}
-                              onMouseEnter={() => setHoveredModel(model.id)}
-                              onMouseLeave={() => {
-                                if (hoveredModel === model.id)
-                                  setHoveredModel(null);
-                              }}
-                              className={cn(
-                                "group text-xxs relative flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1 text-left transition-colors select-none",
-                                isActive
-                                  ? "bg-zinc-100"
-                                  : "hover:text-zinc-800",
-                              )}
-                            >
-                              <AnimatePresence>
-                                {isHovered && (
-                                  <HoverIndicator
-                                    layoutId="v2-model-hover-indicator"
-                                    rounded="rounded-lg"
-                                    isActive={isActive}
-                                    bg="bg-zinc-100"
-                                  />
-                                )}
-                              </AnimatePresence>
-                              <span
-                                className={cn(
-                                  "relative z-10 flex items-center gap-1.5 font-normal whitespace-nowrap transition-colors duration-150",
-                                  isActive ? "text-zinc-800" : "text-zinc-700",
-                                )}
-                              >
-                                <span>{model.name}</span>
-                                {model.version && (
-                                  <>
-                                    <span className="text-zinc-400 select-none">
-                                      —
-                                    </span>
-                                    <span className="inline-flex items-center gap-0.5 font-normal text-zinc-600">
-                                      <OmegaIcon
-                                        width={10}
-                                        height={10}
-                                        strokeWidth={1.5}
-                                        className="shrink-0 text-zinc-600"
-                                      />
-                                      <span>{model.version}</span>
-                                    </span>
-                                  </>
-                                )}
+                  {/* Usage Limits Popup */}
+                  <AnimatePresence>
+                    {usagePopupOpen && (
+                      <motion.div
+                        key="usage-limits-popup"
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.96 }}
+                        transition={{
+                          duration: 0.16,
+                          ease: [0.23, 1, 0.32, 1],
+                        }}
+                        style={{
+                          willChange: "transform, opacity",
+                          transform: "translateZ(0)",
+                        }}
+                        onMouseEnter={handleUsageMouseEnter}
+                        onMouseLeave={handleUsageMouseLeave}
+                        className="absolute right-0 bottom-full z-50 mb-1.5 w-56 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-3 shadow-xl will-change-transform select-none"
+                      >
+                        <div className="flex flex-col gap-2.5">
+                          {/* 5hr Limit Item */}
+                          <div className="flex flex-col gap-1">
+                            <div className="text-xxs flex items-center justify-between">
+                              <span className="font-normal text-zinc-800">
+                                5hr limit
                               </span>
-
-                              {/* AI Innovation Icon: for info only, triggers info menu with 400ms delay */}
+                              <span className="font-normal text-zinc-600">
+                                56% left
+                              </span>
+                            </div>
+                            {/* Micro linear progress bar */}
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
                               <div
-                                onMouseEnter={(e) => {
-                                  e.stopPropagation();
-                                  handleInfoMouseEnter(model.id);
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.stopPropagation();
-                                  handleInfoMouseLeave();
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                                className={cn(
-                                  "relative z-10 flex cursor-help items-center justify-center rounded p-0.5 transition-colors duration-150",
-                                  isInfoActive
-                                    ? "bg-zinc-200/60 text-zinc-800"
-                                    : "text-zinc-400 hover:text-zinc-700",
-                                )}
-                                title={`Info for ${model.name}`}
-                                aria-label={`Info for ${model.name}`}
-                              >
-                                <AiInnovationIcon
-                                  width={11}
-                                  height={11}
-                                  strokeWidth={1.5}
-                                />
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
+                                className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                                style={{ width: "56%" }}
+                              />
+                            </div>
+                            <div className="text-xxs font-normal text-zinc-600">
+                              Resets in 2h 14m
+                            </div>
+                          </div>
 
-                      {/* Full-width Divider */}
-                      <div className="-mx-2 my-1.5 border-t border-zinc-200/70" />
+                          {/* Full-width Divider */}
+                          <div className="-mx-3 border-t border-zinc-200/70" />
 
-                      {/* Slider inside dropdown with selected depth value on left */}
-                      <div className="flex flex-col gap-1.5 px-2.5 pb-0.5">
-                        <div className="text-xxs flex items-center select-none">
-                          <span className="font-normal text-zinc-800">
-                            {
-                              DEPTH_STEPS.find((d) => d.value === modelDepth)
-                                ?.label
-                            }
-                          </span>
+                          {/* Weekly Limit Item */}
+                          <div className="flex flex-col gap-1">
+                            <div className="text-xxs flex items-center justify-between">
+                              <span className="font-normal text-zinc-800">
+                                Weekly limit
+                              </span>
+                              <span className="font-normal text-zinc-600">
+                                82% left
+                              </span>
+                            </div>
+                            {/* Micro linear progress bar */}
+                            <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
+                              <div
+                                className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                                style={{ width: "82%" }}
+                              />
+                            </div>
+                            <div className="text-xxs font-normal text-zinc-600">
+                              Resets Monday at 9:00 AM
+                            </div>
+                          </div>
                         </div>
-                        <Slider
-                          value={modelDepth}
-                          min={1}
-                          max={4}
-                          step={1}
-                          onChange={setModelDepth}
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>
