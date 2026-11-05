@@ -565,11 +565,7 @@ export default function DashboardHomeView() {
                   aria-label="Usage limits"
                 >
                   <span>56%</span>
-                  <CircularProgress
-                    value={56}
-                    size={10}
-                    strokeWidth={1.5}
-                  />
+                  <CircularProgress value={56} size={10} strokeWidth={1.5} />
                 </button>
 
                 {/* Usage Limits Popup */}
