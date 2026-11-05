@@ -1652,4 +1652,92 @@ export function EnterIcon({
   );
 }
 
+// ── MicrophoneIcon (Chat Input / Voice) ───────────────────────────────────────
+export function MicrophoneIcon({
+  width = 24,
+  height = 24,
+  className,
+  color = "currentColor",
+  strokeWidth = 1.5,
+  ...props
+}: IconProps & { strokeWidth?: number | string } = {}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M7 6.5C7 4.01472 9.01472 2 11.5 2C13.9853 2 16 4.01472 16 6.5V11.5C16 13.9853 13.9853 16 11.5 16C9.01472 16 7 13.9853 7 11.5V6.5Z" />
+      <path d="M11.5 19H11.0828C7.57267 19 4.57706 16.4623 4 13M11.5 19H11.9172C15.4273 19 18.4229 16.4623 19 13M11.5 19V22" />
+    </svg>
+  );
+}
+
+// ── OmegaIcon (Model Selector / Omega) ─────────────────────────────────────────
+export function OmegaIcon({
+  width = 24,
+  height = 24,
+  className,
+  color = "currentColor",
+  strokeWidth = 1.5,
+  ...props
+}: IconProps & { strokeWidth?: number | string } = {}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M2 19C2.02342 19.7767 2.11012 20.24 2.43105 20.5607C2.87077 21 3.57849 21 4.99393 21H7.965C8.74255 21 9.13132 21 9.17551 20.8603C9.2197 20.7206 8.88712 20.4868 8.22198 20.0192C5.86888 18.3648 3.99306 15.5091 3.99306 12.2636C3.99306 7.14744 7.57789 3 12 3C16.4221 3 20.0069 7.14744 20.0069 12.2636C20.0069 15.5091 18.1311 18.3648 15.778 20.0192C15.1129 20.4868 14.7803 20.7206 14.8245 20.8603C14.8687 21 15.2574 21 16.035 21H19.0061C20.4215 21 21.1292 21 21.5689 20.5607C21.8899 20.24 21.9766 19.7767 22 19" />
+    </svg>
+  );
+}
+
+// ── AiInnovationIcon (Lightbulb + AI) ──────────────────────────────────────────
+export function AiInnovationIcon({
+  width = 24,
+  height = 24,
+  className,
+  color = "currentColor",
+  strokeWidth = 1.5,
+  ...props
+}: IconProps & { strokeWidth?: number | string } = {}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      width={width}
+      height={height}
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M17.2916 16C18.9525 14.5341 20 12.3894 20 10C20 5.58173 16.4182 2 12 2C7.58173 2 4 5.58173 4 10C4 12.3894 5.04751 14.5341 6.70836 16" />
+      <path d="M8.5 19H15.5" />
+      <path d="M10 22H14" />
+      <path d="M12 8.125V10M12 10V11.875M12 10H10.5M12 10H13.5M15 10L13.6987 9.56623C13.1015 9.36716 12.6328 8.89853 12.4338 8.30132L12 7L11.5662 8.30132C11.3672 8.89853 10.8985 9.36716 10.3013 9.56623L9 10L10.3013 10.4338C10.8985 10.6328 11.3672 11.1015 11.5662 11.6987L12 13L12.4338 11.6987C12.6328 11.1015 13.1015 10.6328 13.6987 10.4338L15 10Z" />
+    </svg>
+  );
+}
+
 export { default as HandDrawnUnderline } from "../components/handDrawnUnderline";

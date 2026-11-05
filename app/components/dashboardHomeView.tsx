@@ -7,6 +7,9 @@ import { cn } from "@/app/utility/cn";
 import {
   ChevronDownIcon,
   EnterIcon,
+  MicrophoneIcon,
+  OmegaIcon,
+  AiInnovationIcon,
 } from "../icons";
 
 const useIsomorphicLayoutEffect =
@@ -15,6 +18,7 @@ const useIsomorphicLayoutEffect =
 interface LatticeModel {
   id: string;
   name: string;
+  version?: string;
   description: string;
   speed: string;
 }
@@ -45,21 +49,34 @@ const CRM_PROMPT_ANSWERS: Record<string, string> = {
 
 const LATTICE_MODELS: LatticeModel[] = [
   {
-    id: "lattice-pulse",
-    name: "Lattice Pulse",
-    description: "Fast triage & rapid responses",
-    speed: "Fast",
+    id: "auto",
+    name: "Auto",
+    description:
+      "Automatically routes your requests to the best model based on prompt complexity, speed requirements, and task context.",
+    speed: "Dynamic",
   },
   {
-    id: "lattice-matrix",
-    name: "Lattice Matrix",
-    description: "Balanced reasoning & workflow automation",
+    id: "modula-core",
+    name: "Modula Core",
+    version: "1.4",
+    description:
+      "General-purpose business intelligence for understanding your business, interpreting requests, retrieving relevant information, and coordinating everyday tasks.",
     speed: "Standard",
   },
   {
-    id: "lattice-nexus",
-    name: "Lattice Nexus",
-    description: "Deep multi-step analysis & revenue planning",
+    id: "modula-forma",
+    name: "Modula Forma",
+    version: "2.1",
+    description:
+      "Specialized in numerical and statistical analysis, identifying patterns and trends, and turning business data into meaningful visualizations.",
+    speed: "Fast",
+  },
+  {
+    id: "modula-scribe",
+    name: "Modula Scribe",
+    version: "1.2",
+    description:
+      "Specialized in understanding conversations and written information, generating meeting notes, extracting action items, and preparing meeting briefs and follow-ups.",
     speed: "Deep",
   },
 ];
@@ -77,6 +94,51 @@ const PAST_CHATS = [
   { id: 2, title: "SDR outbound cadence", time: "Oct 29" },
 ];
 
+function CircularProgress({
+  value = 56,
+  size = 10,
+  strokeWidth = 1.5,
+  className,
+}: {
+  value?: number;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+}) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (value / 100) * circumference;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className={cn("shrink-0 -rotate-90", className)}
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        className="stroke-zinc-200"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        className="stroke-emerald-500 transition-[stroke-dashoffset] duration-300 ease-out"
+        strokeWidth={strokeWidth}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
 function HoverIndicator({
   layoutId = "model-hover-indicator",
   rounded = "rounded-lg",
@@ -91,7 +153,8 @@ function HoverIndicator({
   return (
     <motion.div
       layoutId={layoutId}
-      className={cn("absolute inset-0 pointer-events-none", bg, rounded)}
+      layout="position"
+      className={cn("pointer-events-none absolute inset-0", bg, rounded)}
       initial={{ opacity: 0 }}
       animate={{ opacity: isActive ? 0 : 1 }}
       exit={{ opacity: 0 }}
@@ -148,14 +211,15 @@ export function QuickPromptsDropdown({
         type="button"
         onClick={() => onSelectPrompt(prompt)}
         onMouseEnter={() => setHoveredPrompt(index)}
-        className="relative group flex w-full items-center justify-between rounded-xl pl-2.5 pr-2 py-1.5 text-left text-xxs font-normal text-zinc-500 hover:text-zinc-800 transition-colors duration-150 ease-out cursor-pointer select-none"
+        className="group text-xxs relative flex w-full cursor-pointer items-center justify-between rounded-xl py-1.5 pr-2 pl-2.5 text-left font-normal text-zinc-500 transition-colors duration-150 ease-out select-none hover:text-zinc-800"
       >
         {/* Unified Hover Container: moving indicator pill and enter icon together */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
               layoutId="v2-quick-prompts-indicator"
-              className="absolute inset-0 rounded-xl bg-zinc-200 flex items-center justify-end pr-2 pointer-events-none"
+              layout="position"
+              className="pointer-events-none absolute inset-0 flex items-center justify-end rounded-xl bg-zinc-200 pr-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -169,18 +233,18 @@ export function QuickPromptsDropdown({
                 height={11}
                 strokeWidth={1.5}
                 color="currentColor"
-                className="text-zinc-500 transition-transform duration-100 ease-out group-active:translate-x-1"
+                className="text-zinc-500"
               />
             </motion.div>
           )}
         </AnimatePresence>
 
-        <span className="relative z-10 leading-snug whitespace-nowrap truncate">
+        <span className="relative z-10 truncate leading-snug whitespace-nowrap">
           {prompt}
         </span>
 
         {/* Space reservation so text never overlaps the icon */}
-        <div className="w-3.5 h-3.5 shrink-0 ml-2 opacity-0 pointer-events-none" />
+        <div className="pointer-events-none ml-2 h-3.5 w-3.5 shrink-0 opacity-0" />
       </button>
     );
   };
@@ -196,9 +260,9 @@ export function QuickPromptsDropdown({
             y: 6,
             transition: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
           }}
-          className="absolute bottom-full mb-1.5 left-0 z-20 pointer-events-none"
+          className="pointer-events-none absolute bottom-full left-0 z-20 mb-1.5"
         >
-          {/* 
+          {/*
             Look closely at the geometry:
             When collapsed, the box sits at `bottom-0 left-0`.
             As it expands, the WHOLE container translates upward smoothly while `clipPath`
@@ -216,7 +280,7 @@ export function QuickPromptsDropdown({
               duration: 0.25,
               ease: [0.23, 1, 0.32, 1],
             }}
-            className="w-max rounded-2xl bg-zinc-100 p-1 will-change-[clip-path] pointer-events-auto"
+            className="pointer-events-auto w-max rounded-2xl bg-zinc-100 p-1 will-change-[clip-path]"
           >
             {/* Prompts list: Placed ABOVE the title Quick Prompts */}
             <motion.div
@@ -230,8 +294,8 @@ export function QuickPromptsDropdown({
               }}
               onMouseLeave={() => setHoveredPrompt(null)}
               className={cn(
-                "flex flex-col space-y-0.5 pb-0.5 w-max",
-                !promptsExpanded && "pointer-events-none"
+                "flex w-max flex-col space-y-0.5 pb-0.5",
+                !promptsExpanded && "pointer-events-none",
               )}
             >
               {PRE_PROMPTS.map((prompt, idx) => renderPromptItem(prompt, idx))}
@@ -240,13 +304,13 @@ export function QuickPromptsDropdown({
             {/* Header: Fixed at bottom-left */}
             <div
               ref={headerRef}
-              className="group flex items-center gap-1.5 px-2 py-1 select-none cursor-pointer w-max"
+              className="group flex w-max cursor-pointer items-center gap-1.5 px-2 py-1 select-none"
               onClick={() => setPromptsExpanded(!promptsExpanded)}
             >
-              <span className="text-xxs font-normal text-zinc-400 group-hover:text-zinc-800 transition-colors duration-150 ease-out whitespace-nowrap">
+              <span className="text-xxs font-normal whitespace-nowrap text-zinc-400 transition-colors duration-150 ease-out group-hover:text-zinc-800">
                 Quick prompts
               </span>
-              <div className="flex items-center justify-center text-zinc-400 group-hover:text-zinc-800 transition-colors duration-150 ease-out p-0.5 shrink-0 pointer-events-none">
+              <div className="pointer-events-none flex shrink-0 items-center justify-center p-0.5 text-zinc-400 transition-colors duration-150 ease-out group-hover:text-zinc-800">
                 <motion.div
                   animate={{ rotate: promptsExpanded ? 180 : 0 }}
                   transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
@@ -263,20 +327,71 @@ export function QuickPromptsDropdown({
 }
 
 export default function DashboardHomeView() {
-  const [selectedModelId, setSelectedModelId] = useState<string>("lattice-matrix");
+  const [selectedModelId, setSelectedModelId] = useState<string>("auto");
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [hoveredModel, setHoveredModel] = useState<string | null>(null);
+
+  // Model Info Menu state with 400ms delay on hovering AiInnovationIcon
+  const [infoModelId, setInfoModelId] = useState<string | null>(null);
+  const infoTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleInfoMouseEnter = (modelId: string) => {
+    if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
+    infoTimeoutRef.current = setTimeout(() => {
+      setInfoModelId(modelId);
+    }, 400);
+  };
+
+  const handleInfoMouseLeave = () => {
+    if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
+    infoTimeoutRef.current = setTimeout(() => {
+      setInfoModelId(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
+    };
+  }, []);
+
+  const [usagePopupOpen, setUsagePopupOpen] = useState(false);
+  const usageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleUsageMouseEnter = () => {
+    if (usageTimeoutRef.current) clearTimeout(usageTimeoutRef.current);
+    usageTimeoutRef.current = setTimeout(() => {
+      setUsagePopupOpen(true);
+    }, 400);
+  };
+
+  const handleUsageMouseLeave = () => {
+    if (usageTimeoutRef.current) clearTimeout(usageTimeoutRef.current);
+    usageTimeoutRef.current = setTimeout(() => {
+      setUsagePopupOpen(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (usageTimeoutRef.current) clearTimeout(usageTimeoutRef.current);
+    };
+  }, []);
 
   const [activeChat, setActiveChat] = useState<number | null>(0);
   const [hoveredChat, setHoveredChat] = useState<number | null>(null);
 
   const [modelDepth, setModelDepth] = useState<number>(2);
   const [chatInput, setChatInput] = useState<string>("");
-  const [messages, setMessages] = useState<Array<{ sender: "user" | "lattice"; text: string }>>([]);
+  const [messages, setMessages] = useState<
+    Array<{ sender: "user" | "lattice"; text: string }>
+  >([]);
 
   const modelDropdownRef = useRef<HTMLDivElement>(null);
 
-  const currentModel = LATTICE_MODELS.find((m) => m.id === selectedModelId) || LATTICE_MODELS[1];
+  const currentModel =
+    LATTICE_MODELS.find((m) => m.id === selectedModelId) || LATTICE_MODELS[0];
+  const infoModelData = LATTICE_MODELS.find((m) => m.id === infoModelId);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -287,6 +402,8 @@ export default function DashboardHomeView() {
       ) {
         setModelDropdownOpen(false);
         setHoveredModel(null);
+        if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current);
+        setInfoModelId(null);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -325,10 +442,10 @@ export default function DashboardHomeView() {
   return (
     <div className="flex h-full w-full overflow-hidden bg-white text-zinc-800">
       {/* Center Main Content Area: Relative container with NO scrollable surface */}
-      <div className="relative flex flex-1 flex-col items-center justify-center h-full w-full overflow-hidden px-6 scrollbar-none">
+      <div className="relative flex h-full w-full flex-1 scrollbar-none flex-col items-center justify-center overflow-hidden px-6">
         {/* Centered Content: Greeting OR Active Conversation */}
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center select-none -translate-y-6">
+          <div className="flex -translate-y-6 flex-col items-center justify-center text-center select-none">
             {/*<h1 className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-900">
               Hi, Karan
             </h1>
@@ -337,32 +454,32 @@ export default function DashboardHomeView() {
             </p>*/}
           </div>
         ) : (
-          <div className="flex flex-1 w-full max-w-[480px] flex-col justify-end space-y-2 pt-6 pb-24 overflow-hidden">
-            <div className="flex items-center justify-between pb-1 border-b border-zinc-100 select-none">
-              <span className="text-[10px] text-zinc-400">Conversation</span>
+          <div className="flex w-full max-w-[480px] flex-1 flex-col justify-end space-y-2 overflow-hidden pt-6 pb-24">
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-1 select-none">
+              <span className="text-xxs text-zinc-400">Conversation</span>
               <button
                 type="button"
                 onClick={() => setMessages([])}
-                className="text-[10px] text-zinc-400 hover:text-zinc-700 transition-[color,transform] duration-150 ease-out active:scale-[0.97] cursor-pointer"
+                className="text-xxs cursor-pointer text-zinc-400 transition-[color,transform] duration-150 ease-out hover:text-zinc-700 active:scale-[0.97]"
               >
                 Reset
               </button>
             </div>
-            <div className="space-y-2 max-h-[calc(100vh-220px)] overflow-y-auto pr-1 scrollbar-none">
+            <div className="max-h-[calc(100vh-220px)] scrollbar-none space-y-2 overflow-y-auto pr-1">
               {messages.map((m, i) => (
                 <div
                   key={i}
                   className={cn(
                     "flex flex-col gap-0.5",
-                    m.sender === "user" ? "items-end" : "items-start"
+                    m.sender === "user" ? "items-end" : "items-start",
                   )}
                 >
                   <div
                     className={cn(
-                      "rounded-2xl px-3.5 py-1.5 text-[11px] leading-relaxed max-w-[88%]",
+                      "max-w-[88%] rounded-2xl px-3.5 py-1.5 text-xs leading-relaxed",
                       m.sender === "user"
-                        ? "bg-zinc-900 text-white font-normal"
-                        : "bg-zinc-100 text-zinc-800 font-normal"
+                        ? "bg-zinc-900 font-normal text-white"
+                        : "bg-zinc-100 font-normal text-zinc-800",
                     )}
                   >
                     {m.text}
@@ -374,7 +491,7 @@ export default function DashboardHomeView() {
         )}
 
         {/* Prompt Box: Placed Absolutely at Bottom in Center */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-6 sm:px-0 z-30 pointer-events-auto">
+        <div className="pointer-events-auto absolute bottom-3 left-1/2 z-30 w-full max-w-[480px] -translate-x-1/2 px-6 sm:px-0">
           {/* Chat Window Outer Container */}
           <div className="relative w-full">
             {/* Quick Prompts Extension */}
@@ -386,7 +503,7 @@ export default function DashboardHomeView() {
             {/* Stable Prompt Capsule: input and enter button stay rock-solid */}
             <div className="w-full rounded-2xl bg-zinc-100 p-1.5">
               {/* Prompt Input Row */}
-              <div className="flex items-center justify-between gap-3 pl-2 pr-0.5 py-0.5">
+              <div className="flex items-center justify-between gap-2 py-0.5 pr-0.5 pl-2">
                 <input
                   type="text"
                   value={chatInput}
@@ -398,26 +515,139 @@ export default function DashboardHomeView() {
                     }
                   }}
                   placeholder="Ask Lattice about deals, pipeline risks, or schedule..."
-                  className="w-full bg-transparent text-xs  font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
+                  className="w-full bg-transparent text-xs font-normal text-zinc-800 placeholder:text-zinc-400 focus:outline-none"
                 />
-                <button
-                  type="button"
-                  onClick={handleSendMessage}
-                  className="flex shrink-0 items-center p-1 px-2 justify-center rounded-full bg-zinc-800 border border-zinc-700 text-zinc-100 hover:bg-zinc-700 active:scale-95 duration-150 ease-out cursor-pointer shadow-xs"
-                  title="Send"
-                >
-                  <EnterIcon width={12} height={12} strokeWidth={1.75} color="currentColor" className="text-zinc-100" />
-                </button>
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    type="button"
+                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-zinc-400 transition-colors duration-150 ease-out hover:bg-zinc-200/60 hover:text-zinc-700"
+                    title="Voice input"
+                    aria-label="Voice input"
+                  >
+                    <MicrophoneIcon
+                      width={13}
+                      height={13}
+                      strokeWidth={1.5}
+                      color="currentColor"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendMessage}
+                    className="flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-zinc-700 bg-zinc-800 p-1 px-2 text-zinc-100 shadow-xs duration-150 ease-out hover:bg-zinc-700"
+                    title="Send"
+                  >
+                    <EnterIcon
+                      width={12}
+                      height={12}
+                      strokeWidth={1.75}
+                      color="currentColor"
+                      className="text-zinc-100"
+                    />
+                  </button>
+                </div>
               </div>
             </div>
 
-            {/* Model Menu tag placed AFTER prompt at bottom right */}
-            <div className="relative mt-1.5 flex items-center justify-end" ref={modelDropdownRef}>
+            {/* Prompt Footer Row: Limit & Model Selector grouped together at bottom right */}
+            <div
+              className="relative mt-1.5 flex items-center justify-end gap-1 px-1"
+              ref={modelDropdownRef}
+            >
+              {/* Limit Remaining: placed near model selector toggle (hovers with 400ms delay to show limits) */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onMouseEnter={handleUsageMouseEnter}
+                  onMouseLeave={handleUsageMouseLeave}
+                  onClick={() => setUsagePopupOpen((prev) => !prev)}
+                  className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1.5 rounded-md px-1.5 text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
+                  aria-label="Usage limits"
+                >
+                  <span>56%</span>
+                  <CircularProgress
+                    value={56}
+                    size={10}
+                    strokeWidth={1.5}
+                  />
+                </button>
+
+                {/* Usage Limits Popup */}
+                <AnimatePresence>
+                  {usagePopupOpen && (
+                    <motion.div
+                      key="usage-limits-popup"
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.16, ease: [0.23, 1, 0.32, 1] }}
+                      style={{
+                        willChange: "transform, opacity",
+                        transform: "translateZ(0)",
+                      }}
+                      onMouseEnter={handleUsageMouseEnter}
+                      onMouseLeave={handleUsageMouseLeave}
+                      className="absolute right-0 bottom-full z-50 mb-1.5 w-56 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-3 shadow-xl will-change-transform select-none"
+                    >
+                      <div className="flex flex-col gap-2.5">
+                        {/* 5hr Limit Item */}
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xxs flex items-center justify-between">
+                            <span className="font-normal text-zinc-800">
+                              5hr limit
+                            </span>
+                            <span className="font-normal text-zinc-600">
+                              56% left
+                            </span>
+                          </div>
+                          {/* Micro linear progress bar */}
+                          <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
+                            <div
+                              className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                              style={{ width: "56%" }}
+                            />
+                          </div>
+                          <div className="text-xxs font-normal text-zinc-600">
+                            Resets in 2h 14m
+                          </div>
+                        </div>
+
+                        {/* Full-width Divider */}
+                        <div className="-mx-3 border-t border-zinc-200/70" />
+
+                        {/* Weekly Limit Item */}
+                        <div className="flex flex-col gap-1">
+                          <div className="text-xxs flex items-center justify-between">
+                            <span className="font-normal text-zinc-800">
+                              Weekly limit
+                            </span>
+                            <span className="font-normal text-zinc-600">
+                              82% left
+                            </span>
+                          </div>
+                          {/* Micro linear progress bar */}
+                          <div className="h-1 w-full overflow-hidden rounded-full bg-zinc-200/70">
+                            <div
+                              className="h-full rounded-full bg-emerald-500 transition-[width] duration-300 ease-out"
+                              style={{ width: "82%" }}
+                            />
+                          </div>
+                          <div className="text-xxs font-normal text-zinc-600">
+                            Resets Monday at 9:00 AM
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Model Menu tag placed at bottom right */}
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setModelDropdownOpen(!modelDropdownOpen)}
-                  className="inline-flex items-center gap-1 rounded-md bg-transparent border-none px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/60 transition-colors cursor-pointer select-none"
+                  className="text-xxs inline-flex h-5 cursor-pointer items-center gap-1 rounded-md border-none bg-transparent px-1.5 font-medium text-zinc-500 transition-colors select-none hover:bg-zinc-100/60 hover:text-zinc-800"
                 >
                   <span>{currentModel.name}</span>
                   <ChevronDownIcon
@@ -426,81 +656,205 @@ export default function DashboardHomeView() {
                     strokeWidth={1.5}
                     className={cn(
                       "text-zinc-400 transition-transform",
-                      modelDropdownOpen && "rotate-180"
+                      modelDropdownOpen && "rotate-180",
                     )}
                   />
                 </button>
 
-                {/* Dropdown Menu: Appears UP aligned to right (`right-0 bottom-full mb-1.5`), rounded-2xl */}
-                {modelDropdownOpen && (
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseLeave={() => setHoveredModel(null)}
-                    className="absolute right-0 bottom-full mb-1.5 w-48 rounded-2xl border border-zinc-200 bg-white p-2 shadow-xl z-50"
-                  >
-                    <div className="px-1.5 py-0.5 text-[9px] uppercase tracking-wider font-normal text-zinc-400 select-none">
-                      Model
-                    </div>
-                    <div className="space-y-0.5 mt-0.5">
-                      {LATTICE_MODELS.map((model) => {
-                        const isActive = selectedModelId === model.id;
-                        const isHovered = hoveredModel === model.id;
-                        return (
-                          <button
-                            key={model.id}
-                            type="button"
-                            onClick={() => setSelectedModelId(model.id)}
-                            onMouseEnter={() => setHoveredModel(model.id)}
-                            onMouseLeave={() => {
-                              if (hoveredModel === model.id) setHoveredModel(null);
+                {/* Dropdown Menu: Appears UP aligned to right (`right-0 bottom-full mb-1.5`), rounded-2xl with fade + subtle scale */}
+                <AnimatePresence>
+                  {modelDropdownOpen && (
+                    <motion.div
+                      key="model-dropdown-menu"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseLeave={() => {
+                        setHoveredModel(null);
+                        handleInfoMouseLeave();
+                      }}
+                      initial={{
+                        opacity: 0,
+                        scale: 0.96,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        scale: 1,
+                      }}
+                      exit={{
+                        opacity: 0,
+                        scale: 0.96,
+                      }}
+                      transition={{
+                        duration: 0.16,
+                        ease: [0.23, 1, 0.32, 1],
+                      }}
+                      style={{
+                        willChange: "transform, opacity",
+                        transform: "translateZ(0)",
+                      }}
+                      className="absolute right-0 bottom-full z-50 mb-1.5 w-48 origin-bottom-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2 shadow-xl will-change-transform"
+                    >
+                      {/* Model Info Hover Card (triggered after 400ms delay on hovering AiInnovationIcon) */}
+                      <AnimatePresence>
+                        {infoModelData && (
+                          <motion.div
+                            key="model-info-card"
+                            initial={{ opacity: 0, scale: 0.96, x: 4 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, x: 4 }}
+                            transition={{
+                              duration: 0.16,
+                              ease: [0.23, 1, 0.32, 1],
                             }}
-                            className={cn(
-                              "relative flex w-full items-center justify-between rounded-lg px-2.5 py-1 text-left text-[10px] select-none transition-colors cursor-pointer",
-                              isActive ? "bg-zinc-100 text-zinc-900" : "text-zinc-600 hover:text-zinc-800"
-                            )}
+                            style={{
+                              willChange: "transform, opacity",
+                              transform: "translateZ(0)",
+                            }}
+                            onMouseEnter={() => {
+                              if (infoTimeoutRef.current)
+                                clearTimeout(infoTimeoutRef.current);
+                            }}
+                            onMouseLeave={handleInfoMouseLeave}
+                            className="absolute top-0 right-full z-50 mr-1.5 w-60 origin-top-right rounded-2xl border border-zinc-200/80 bg-zinc-50 p-2.5 shadow-xl will-change-transform select-none"
                           >
-                            <AnimatePresence>
-                              {isHovered && (
-                                <HoverIndicator
-                                  layoutId="v2-model-hover-indicator"
-                                  rounded="rounded-lg"
-                                  isActive={isActive}
-                                  bg="bg-zinc-100"
-                                />
+                            <div className="flex flex-col gap-1">
+                              <div className="text-xxs flex items-center gap-1.5">
+                                <span className="font-medium text-zinc-800">
+                                  {infoModelData.name}
+                                </span>
+                                {infoModelData.version && (
+                                  <>
+                                    <span className="inline-flex items-center gap-0.5 font-normal text-zinc-600">
+                                      <OmegaIcon
+                                        width={10}
+                                        height={10}
+                                        strokeWidth={3}
+                                        className="shrink-0 text-zinc-600"
+                                      />
+                                      <span>{infoModelData.version}</span>
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                              <p className="text-xxs leading-relaxed font-normal text-zinc-600">
+                                {infoModelData.description}
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="space-y-0.5">
+                        {LATTICE_MODELS.map((model) => {
+                          const isActive = selectedModelId === model.id;
+                          const isHovered = hoveredModel === model.id;
+                          const isInfoActive = infoModelId === model.id;
+                          return (
+                            <button
+                              key={model.id}
+                              type="button"
+                              onClick={() => setSelectedModelId(model.id)}
+                              onMouseEnter={() => setHoveredModel(model.id)}
+                              onMouseLeave={() => {
+                                if (hoveredModel === model.id)
+                                  setHoveredModel(null);
+                              }}
+                              className={cn(
+                                "group text-xxs relative flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1 text-left transition-colors select-none",
+                                isActive
+                                  ? "bg-zinc-100"
+                                  : "hover:text-zinc-800",
                               )}
-                            </AnimatePresence>
-                            <span className={cn("relative z-10", isActive ? "font-medium text-zinc-900" : "font-normal text-zinc-700")}>
-                              {model.name}
-                            </span>
-                            <span className={cn("relative z-10 text-[9px]", isActive ? "text-zinc-600" : "text-zinc-400")}>
-                              {model.speed}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            >
+                              <AnimatePresence>
+                                {isHovered && (
+                                  <HoverIndicator
+                                    layoutId="v2-model-hover-indicator"
+                                    rounded="rounded-lg"
+                                    isActive={isActive}
+                                    bg="bg-zinc-100"
+                                  />
+                                )}
+                              </AnimatePresence>
+                              <span
+                                className={cn(
+                                  "relative z-10 flex items-center gap-1.5 font-normal whitespace-nowrap transition-colors duration-150",
+                                  isActive ? "text-zinc-800" : "text-zinc-700",
+                                )}
+                              >
+                                <span>{model.name}</span>
+                                {model.version && (
+                                  <>
+                                    <span className="text-zinc-400 select-none">
+                                      —
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5 font-normal text-zinc-600">
+                                      <OmegaIcon
+                                        width={10}
+                                        height={10}
+                                        strokeWidth={1.5}
+                                        className="shrink-0 text-zinc-600"
+                                      />
+                                      <span>{model.version}</span>
+                                    </span>
+                                  </>
+                                )}
+                              </span>
 
-                    {/* Divider */}
-                    <div className="my-2 border-t border-zinc-100" />
-
-                    {/* Slider inside dropdown with title showing selected option */}
-                    <div className="px-1.5 flex flex-col gap-1.5 pt-0.5">
-                      <div className="flex items-center justify-between text-[10px] select-none">
-                        <span className="font-normal text-zinc-400">Depth</span>
-                        <span className="font-medium text-zinc-800">
-                          {DEPTH_STEPS.find((d) => d.value === modelDepth)?.label}
-                        </span>
+                              {/* AI Innovation Icon: for info only, triggers info menu with 400ms delay */}
+                              <div
+                                onMouseEnter={(e) => {
+                                  e.stopPropagation();
+                                  handleInfoMouseEnter(model.id);
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.stopPropagation();
+                                  handleInfoMouseLeave();
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className={cn(
+                                  "relative z-10 flex cursor-help items-center justify-center rounded p-0.5 transition-colors duration-150",
+                                  isInfoActive
+                                    ? "bg-zinc-200/60 text-zinc-800"
+                                    : "text-zinc-400 hover:text-zinc-700",
+                                )}
+                                title={`Info for ${model.name}`}
+                                aria-label={`Info for ${model.name}`}
+                              >
+                                <AiInnovationIcon
+                                  width={11}
+                                  height={11}
+                                  strokeWidth={1.5}
+                                />
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
-                      <Slider
-                        value={modelDepth}
-                        min={1}
-                        max={4}
-                        step={1}
-                        onChange={setModelDepth}
-                      />
-                    </div>
-                  </div>
-                )}
+
+                      {/* Full-width Divider */}
+                      <div className="-mx-2 my-1.5 border-t border-zinc-200/70" />
+
+                      {/* Slider inside dropdown with selected depth value on left */}
+                      <div className="flex flex-col gap-1.5 px-2.5 pb-0.5">
+                        <div className="text-xxs flex items-center select-none">
+                          <span className="font-normal text-zinc-800">
+                            {
+                              DEPTH_STEPS.find((d) => d.value === modelDepth)
+                                ?.label
+                            }
+                          </span>
+                        </div>
+                        <Slider
+                          value={modelDepth}
+                          min={1}
+                          max={4}
+                          step={1}
+                          onChange={setModelDepth}
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
@@ -511,19 +865,25 @@ export default function DashboardHomeView() {
       <aside className="flex w-56 shrink-0 flex-col justify-between border-l border-zinc-100 bg-zinc-50/40 p-4">
         {/* Top: Running Agents */}
         <div>
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/60 select-none">
-            <span className="text-[11px] font-medium text-zinc-900">
+          <div className="flex items-center justify-between border-b border-zinc-200/60 pb-2 select-none">
+            <span className="text-xs font-medium text-zinc-900">
               Running Agents
             </span>
-            <span className="text-[10px] font-normal text-zinc-400">
-              3 active
-            </span>
+            <span className="text-xxs font-normal text-zinc-400">3 active</span>
           </div>
 
           <div className="mt-3 space-y-2">
             {[
-              { title: "Lead Qualifier", desc: "Triaging Ramp Enterprise demo", active: true },
-              { title: "Renewal Radar", desc: "Scanning 42 accounts", active: true },
+              {
+                title: "Lead Qualifier",
+                desc: "Triaging Ramp Enterprise demo",
+                active: true,
+              },
+              {
+                title: "Renewal Radar",
+                desc: "Scanning 42 accounts",
+                active: true,
+              },
               { title: "Pipeline Sync", desc: "Synced 4m ago", active: false },
             ].map((agent, idx) => (
               <div
@@ -531,17 +891,17 @@ export default function DashboardHomeView() {
                 className="relative rounded-lg border border-zinc-200/70 bg-white p-2 transition-colors select-none"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-medium text-zinc-800">
+                  <span className="text-xxs font-medium text-zinc-800">
                     {agent.title}
                   </span>
                   <span
                     className={cn(
                       "h-1.5 w-1.5 rounded-full",
-                      agent.active ? "bg-emerald-500" : "bg-zinc-400"
+                      agent.active ? "bg-emerald-500" : "bg-zinc-400",
                     )}
                   />
                 </div>
-                <p className="mt-0.5 text-[9px] font-normal text-zinc-400">
+                <p className="text-xxs mt-0.5 font-normal text-zinc-400">
                   {agent.desc}
                 </p>
               </div>
@@ -550,14 +910,12 @@ export default function DashboardHomeView() {
         </div>
 
         {/* Bottom: Past Chats with Exact Sidebar Highlight Indicator */}
-        <div className="pt-4 border-t border-zinc-200/60">
+        <div className="border-t border-zinc-200/60 pt-4">
           <div className="flex items-center justify-between pb-2 select-none">
-            <span className="text-[11px] font-medium text-zinc-900">
+            <span className="text-xs font-medium text-zinc-900">
               Past Chats
             </span>
-            <span className="text-[10px] font-normal text-zinc-400">
-              History
-            </span>
+            <span className="text-xxs font-normal text-zinc-400">History</span>
           </div>
 
           <div
@@ -580,8 +938,10 @@ export default function DashboardHomeView() {
                     if (hoveredChat === chat.id) setHoveredChat(null);
                   }}
                   className={cn(
-                    "relative flex w-full flex-col rounded-lg px-2 py-1.5 text-left select-none transition-colors cursor-pointer",
-                    isActive ? "bg-zinc-200 text-zinc-900" : "text-zinc-600 hover:text-zinc-800"
+                    "relative flex w-full cursor-pointer flex-col rounded-lg px-2 py-1.5 text-left transition-colors select-none",
+                    isActive
+                      ? "bg-zinc-200 text-zinc-900"
+                      : "text-zinc-600 hover:text-zinc-800",
                   )}
                 >
                   <AnimatePresence>
@@ -593,10 +953,24 @@ export default function DashboardHomeView() {
                       />
                     )}
                   </AnimatePresence>
-                  <span className={cn("relative z-10 text-[10px] truncate w-full", isActive ? "font-medium text-zinc-900" : "font-normal text-zinc-700")}>
+                  <span
+                    className={cn(
+                      "text-xxs relative z-10 w-full truncate",
+                      isActive
+                        ? "font-medium text-zinc-900"
+                        : "font-normal text-zinc-700",
+                    )}
+                  >
                     {chat.title}
                   </span>
-                  <span className={cn("relative z-10 text-[9px]", isActive ? "text-zinc-600 font-medium" : "text-zinc-400 font-normal")}>
+                  <span
+                    className={cn(
+                      "text-xxs relative z-10",
+                      isActive
+                        ? "font-medium text-zinc-600"
+                        : "font-normal text-zinc-400",
+                    )}
+                  >
                     {chat.time}
                   </span>
                 </button>
